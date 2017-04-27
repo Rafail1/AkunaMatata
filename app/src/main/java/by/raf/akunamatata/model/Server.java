@@ -1,17 +1,15 @@
 package by.raf.akunamatata.model;
 
+import android.location.Location;
+
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Observer;
 
-/**
- * Created by raf on 4/22/17.
- */
 
 public class Server extends ServerListener {
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -21,18 +19,20 @@ public class Server extends ServerListener {
     private HashMap<String, Category> sCategories;
     private HashMap<String, Event> sEvents;
     private HashMap<String, User> sUsers;
-
-
     private ArrayList<Event> mEventList;
-
-
-    public Server() {
+    private static Server instance;
+    private Server() {
         sCategories = new HashMap<>();
         sEvents = new HashMap<>();
         sUsers = new HashMap<>();
         mEventList = new ArrayList<>();
     }
-
+    public static Server getInstance() {
+        if (instance == null) {
+            instance = new Server();
+        }
+        return instance;
+    }
     public void init() {
         sEvents.clear();
         sUsers.clear();
@@ -41,7 +41,7 @@ public class Server extends ServerListener {
         listen(myRefEvents, Event.class, sEvents);
         listen(myRefCategories, Category.class, sCategories);
 // trash
-        /*HashMap<String, Boolean> Categories = new HashMap<>();
+        HashMap<String, Boolean> Categories = new HashMap<>();
 
         for(int i = 0; i < 3; i++) {
             String id = myRefCategories.push().getKey();
@@ -50,18 +50,20 @@ public class Server extends ServerListener {
             Categories.put(id,true);
         }
         sendCategories(sCategories);
-
+        final long allDates = System.currentTimeMillis();
         HashMap<String, Boolean> users = new HashMap<>();
         for(int i = 0; i < 10; i++) {
             String id = myRefUsers.push().getKey();
-            User user = new User(id, i % 2, "Status" + i, new Location("service Provider"));
+            User user = new User(id, i % 2, "Status" + i,
+                    allDates, "https://pp.userapi.com/c624731/v624731782/47886/LrF637bGxPw.jpg",
+                    new Location("service Provider"));
             user.setId(id);
             sUsers.put(id, user);
             users.put(user.getId(), i % 2 == 0);
         }
         sendUsers(sUsers);
 
-        final long allDates = System.currentTimeMillis();
+
 
 
         HashMap<String, Event> startMap = new HashMap<>();
@@ -74,7 +76,7 @@ public class Server extends ServerListener {
                     allDates, allDates, users);
             startMap.put(id, event);
         }
-        sendEvents(startMap);*/
+        sendEvents(startMap);
 
 
     }

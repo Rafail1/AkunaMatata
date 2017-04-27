@@ -11,17 +11,11 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import by.raf.akunamatata.R;
 import by.raf.akunamatata.model.Event;
 
-/**
- * Created by raf on 4/23/17.
- */
 
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventHolder> {
     private List<Event> mDataset;

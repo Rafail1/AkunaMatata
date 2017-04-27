@@ -9,9 +9,6 @@ import android.support.v7.app.AppCompatActivity;
 
 import by.raf.akunamatata.R;
 
-/**
- * Created by raf on 4/21/17.
- */
 
 public abstract class SingleFragmentActivity extends AppCompatActivity {
     public abstract Fragment createFragment();

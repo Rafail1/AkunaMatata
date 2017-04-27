@@ -12,10 +12,6 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
-/**
- * Created by raf on 4/26/17.
- */
-
 public abstract class ServerListener extends Observable {
     List<Observer> mObservers = new ArrayList<>();
 

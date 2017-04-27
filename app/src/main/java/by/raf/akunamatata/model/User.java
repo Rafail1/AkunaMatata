@@ -1,18 +1,11 @@
 package by.raf.akunamatata.model;
 
 import android.location.Location;
-
-import java.util.Date;
-
-/**
- * Created by raf on 4/22/17.
- */
-
 class User extends Entity {
     private String mId;
     private int mSex;
-    private Date mBirghthDay;
-    private long mCreated;
+    private long mBirthDay;
+    private String mPicture;
     private String mStatus;
     private double lat;
     private double lon;
@@ -20,27 +13,26 @@ class User extends Entity {
     public User() {
 
     }
-    private User(String id, int sex, String status, Date birghthDay) {
-        this(id, sex, status);
-        mBirghthDay = birghthDay;
-    }
-    public User(String id, int sex, String status, Date birghthDay, Location location) {
-        this(id, sex, status, birghthDay);
-        lat = location.getLatitude();
-        lon = location.getLongitude();
-    }
-    public User(String id, int sex, String status, Location location) {
-        this(id, sex, status);
-        lat = location.getLatitude();
-        lon = location.getLongitude();
-
-    }
-    private User(String id, int sex, String status) {
+    public User(String id, int sex, String status) {
         mId = id;
         mSex = sex;
         mStatus = status;
-        mCreated = new Date().getTime();
     }
+    public User(String id, int sex, String status, long birthDay) {
+        this(id, sex, status);
+        mBirthDay = birthDay;
+    }
+    public User(String id, int sex, String status, long birthDay, String picture) {
+        this(id, sex, status, birthDay);
+        mPicture = picture;
+    }
+    public User(String id, int sex, String status, long birthDay, String picture, Location location) {
+        this(id, sex, status, birthDay, picture);
+        lat = location.getLatitude();
+        lon = location.getLongitude();
+    }
+
+
 
     public void setId(String id) {
         mId = id;
@@ -83,19 +75,11 @@ class User extends Entity {
         this.lon = lon;
     }
 
-    public long getCreated() {
-        return mCreated;
+    public long getBirthDay() {
+        return mBirthDay;
     }
 
-    public void setCreated(long created) {
-        mCreated = created;
-    }
-
-    public Date getBirghthDay() {
-        return mBirghthDay;
-    }
-
-    public void setBirghthDay(Date birghthDay) {
-        mBirghthDay = birghthDay;
+    public void setBirthDay(long birthDay) {
+        mBirthDay = birthDay;
     }
 }

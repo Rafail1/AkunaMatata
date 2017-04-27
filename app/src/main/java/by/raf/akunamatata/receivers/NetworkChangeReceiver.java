@@ -5,10 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 
 import by.raf.akunamatata.model.GlobalVars;
+import by.raf.akunamatata.model.managers.NetworkManager;
 
-/**
- * Created by raf on 4/22/17.
- */
 
 public class NetworkChangeReceiver extends BroadcastReceiver {
     private GlobalVars mGlobalVars;
@@ -16,15 +14,15 @@ public class NetworkChangeReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         mGlobalVars = (GlobalVars) context.getApplicationContext();
-        if (mGlobalVars.mNetworkManager.isNetworkConnected()) {
+        if (NetworkManager.getInstance().isNetworkConnected(context)) {
             if(!connected) {
                 connected = true;
-                mGlobalVars.mNetworkManager.onNetworkAvailable();
+                NetworkManager.getInstance().onNetworkAvailable();
             }
         } else {
             if(connected) {
                 connected = false;
-                mGlobalVars.mNetworkManager.onLostNetwork();
+                NetworkManager.getInstance().onLostNetwork();
             }
         }
 

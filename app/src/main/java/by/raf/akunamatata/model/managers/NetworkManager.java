@@ -18,18 +18,22 @@ import by.raf.akunamatata.receivers.NetworkChangeReceiver;
 
 public class NetworkManager extends Observable {
     private static final int OBSERVABLE_CODE = 0;
-    public static boolean connected;
     private List<Observer> mObservers;
-    private Context mContext;
     private NetworkChangeReceiver mNetworkChangeReceiver;
     private IntentFilter mFilter;
-    public NetworkManager(Context context) {
-        mContext = context;
-        connected = isNetworkConnected();
+    private static NetworkManager instance;
+    private NetworkManager() {
         mObservers = new ArrayList<>();
         mNetworkChangeReceiver = new NetworkChangeReceiver();
         mFilter = new IntentFilter();
         mFilter.addAction(android.net.ConnectivityManager.CONNECTIVITY_ACTION);
+    }
+
+    public static NetworkManager getInstance() {
+        if (instance == null) {
+            instance = new NetworkManager();
+        }
+        return instance;
     }
 
     public void registerReceiver(Context context) {
@@ -40,14 +44,13 @@ public class NetworkManager extends Observable {
         context.unregisterReceiver(mNetworkChangeReceiver);
     }
 
-    public boolean isNetworkConnected() {
+    public boolean isNetworkConnected(Context context) {
         ConnectivityManager connMgr = (ConnectivityManager)
-                mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+                context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         return networkInfo != null && networkInfo.isConnected();
     }
     public void onNetworkAvailable() {
-        connected = true;
         notifyObservers();
     }
 
@@ -69,7 +72,6 @@ public class NetworkManager extends Observable {
     }
 
     public void onLostNetwork() {
-        connected = false;
         notifyObservers();
     }
 

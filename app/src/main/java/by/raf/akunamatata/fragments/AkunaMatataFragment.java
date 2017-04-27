@@ -12,6 +12,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.GoogleApiClient;
+
 import java.util.Observable;
 import java.util.Observer;
 
@@ -24,9 +28,7 @@ import by.raf.akunamatata.model.managers.NetworkManager;
 import by.raf.akunamatata.model.managers.UserManager;
 import by.raf.akunamatata.recyclerdata.EventAdapter;
 
-/**
- * Created by raf on 4/21/17.
- */
+
 
 public class AkunaMatataFragment extends Fragment implements Observer {
     private UserManager mUserManager;
@@ -34,6 +36,7 @@ public class AkunaMatataFragment extends Fragment implements Observer {
     private RecyclerView mRecyclerView;
     private Server mServer;
     private RecyclerView.Adapter mAdapter;
+    private GoogleApiClient mGoogleApiClient;
     private RecyclerView.LayoutManager mLayoutManager;
 
     public static AkunaMatataFragment newInstance() {
@@ -47,9 +50,9 @@ public class AkunaMatataFragment extends Fragment implements Observer {
                 mAdapter.notifyDataSetChanged();
             }
         } else if(observable instanceof NetworkManager) {
-            if(NetworkManager.connected) {
+            if(NetworkManager.getInstance().isNetworkConnected(getActivity())) {
                 if(!mUserManager.isAuth()) {
-                    mUserManager.auth();
+                    mUserManager.auth(mGoogleApiClient);
                 } else {
                     mServer.init();
                 }
@@ -66,11 +69,17 @@ public class AkunaMatataFragment extends Fragment implements Observer {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        GlobalVars globalVars = (GlobalVars) getActivity().getApplicationContext();
-        mUserManager = globalVars.mUserManager;
-        mNetworkManager = globalVars.mNetworkManager;
-        mServer = globalVars.mServer;
-        mUserManager.auth();
+        mUserManager = UserManager.getInstance();
+        mNetworkManager = NetworkManager.getInstance();
+        mServer = Server.getInstance();
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+        mGoogleApiClient = new GoogleApiClient.Builder(getContext())
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+        mUserManager.auth(mGoogleApiClient);
         setHasOptionsMenu(true);
     }
 
@@ -81,6 +90,7 @@ public class AkunaMatataFragment extends Fragment implements Observer {
         mNetworkManager.addObserver(this);
         mServer.addObserver(this);
         mNetworkManager.registerReceiver(getContext());
+        mGoogleApiClient.connect();
     }
 
     @Override
@@ -89,6 +99,7 @@ public class AkunaMatataFragment extends Fragment implements Observer {
         mNetworkManager.deleteObserver(this);
         mServer.deleteObserver(this);
         mNetworkManager.unregisterReceiver(getContext());
+        mGoogleApiClient.disconnect();
         super.onStop();
     }
 
@@ -116,7 +127,7 @@ public class AkunaMatataFragment extends Fragment implements Observer {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.menu, menu);
         MenuItem exit = menu.findItem(R.id.menu_sign_out);
-        if(!mUserManager.isAuth() || !NetworkManager.connected) {
+        if(!mUserManager.isAuth() || !NetworkManager.getInstance().isNetworkConnected(getActivity())) {
             exit.setTitle(R.string.menu_offline);
         } else {
             exit.setTitle(R.string.menu_sign_out);
@@ -128,7 +139,7 @@ public class AkunaMatataFragment extends Fragment implements Observer {
         switch (item.getItemId()) {
             case R.id.menu_sign_out:
                 if(mUserManager.isAuth()) {
-                    mUserManager.logout(getContext());
+                    mUserManager.logout(getContext(), mGoogleApiClient);
                 }
                 return true;
             default:

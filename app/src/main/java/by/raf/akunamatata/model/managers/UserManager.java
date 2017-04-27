@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
@@ -18,32 +19,34 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.auth. UserInfo;
+import com.google.firebase.auth.UserInfo;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
+import by.raf.akunamatata.R;
 import by.raf.akunamatata.activities.SignInActivity;
 
-/**
- * Created by raf on 4/23/17.
- */
 
 public class UserManager extends Observable {
     private FirebaseAuth mAuth;
-    public GoogleApiClient mGoogleApiClient;
     private List<Observer> loginListeners;
     private static final int OBSERVABLE_CODE = 1;
-    private GoogleSignInAccount mAccount;
     private boolean sendingAuth;
-
-    public UserManager() {
+    private static UserManager instance;
+    private UserManager() {
         loginListeners = new ArrayList<>();
         mAuth = FirebaseAuth.getInstance();
+    }
+
+    public static UserManager getInstance() {
+        if (instance == null) {
+            instance = new UserManager();
+        }
+        return instance;
     }
 
     @Override
@@ -63,7 +66,18 @@ public class UserManager extends Observable {
         }
     }
 
-    public void auth() {
+    private GoogleApiClient newGapiClient(Context context) {
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(context.getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+        return new GoogleApiClient.Builder(context)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+    }
+
+    public void auth(GoogleApiClient mGoogleApiClient) {
+
         OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
         if (opr.isDone()) {
             GoogleSignInResult result = opr.get();
@@ -108,8 +122,8 @@ public class UserManager extends Observable {
                 });
     }
 
-    public void logout(final Context context) {
-        if(!NetworkManager.connected) {
+    public void logout(final Context context, final GoogleApiClient mGoogleApiClient) {
+        if(!NetworkManager.getInstance().isNetworkConnected(context)) {
             return;
         }
         mGoogleApiClient.connect();
@@ -147,10 +161,5 @@ public class UserManager extends Observable {
             }
         }
         return false;
-    }
-
-
-    public void setAccount(GoogleSignInAccount account) {
-        mAccount = account;
     }
 }

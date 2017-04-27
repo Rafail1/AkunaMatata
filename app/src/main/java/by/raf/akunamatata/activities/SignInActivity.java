@@ -18,17 +18,12 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
-import com.google.firebase.auth.FirebaseAuth;
 
 import by.raf.akunamatata.R;
 import by.raf.akunamatata.model.GlobalVars;
 import by.raf.akunamatata.model.managers.NetworkManager;
 import by.raf.akunamatata.model.managers.UserManager;
 
-
-/**
- * Created by raf on 4/22/17.
- */
 
 public class SignInActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener,
@@ -51,9 +46,9 @@ public class SignInActivity extends AppCompatActivity implements
         setContentView(R.layout.fragment_auth);
 
         mGlobalVars = (GlobalVars) getApplicationContext();
-        mNetworkManager = mGlobalVars.mNetworkManager;
-        mUserManager = mGlobalVars.mUserManager;
-        if (!mNetworkManager.isNetworkConnected()) {
+        mNetworkManager = NetworkManager.getInstance();
+        mUserManager = UserManager.getInstance();
+        if (!mNetworkManager.isNetworkConnected(this)) {
             startAkuna();
         }
 
@@ -65,7 +60,6 @@ public class SignInActivity extends AppCompatActivity implements
                 .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
-        mUserManager.mGoogleApiClient = mGoogleApiClient;
         mStatusTextView = (TextView) findViewById(R.id.status);
         logout = getIntent().getBooleanExtra(LOGOUT_ACTION, false);
         if(!logout && mUserManager.isAuth()) {
@@ -111,7 +105,6 @@ public class SignInActivity extends AppCompatActivity implements
     private void handleSignInResult(GoogleSignInResult result) {
         if (result.isSuccess()) {
             GoogleSignInAccount acct = result.getSignInAccount();
-            mUserManager.setAccount(acct);
             hideProgressDialog();
             updateUI(true);
             assert acct != null;

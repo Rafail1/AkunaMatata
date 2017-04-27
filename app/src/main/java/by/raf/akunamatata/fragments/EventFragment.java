@@ -9,9 +9,6 @@ import android.view.ViewGroup;
 
 import by.raf.akunamatata.R;
 
-/**
- * Created by raf on 4/21/17.
- */
 
 public class EventFragment extends Fragment {
     public static Fragment newInstance() {
@@ -21,7 +18,6 @@ public class EventFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_event, container, false);
-        return v;
+        return inflater.inflate(R.layout.fragment_event, container, false);
     }
 }
