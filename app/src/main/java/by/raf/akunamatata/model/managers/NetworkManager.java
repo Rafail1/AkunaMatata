@@ -12,10 +12,6 @@ import java.util.Observer;
 
 import by.raf.akunamatata.receivers.NetworkChangeReceiver;
 
-/**
- * Created by raf on 4/23/17.
- */
-
 public class NetworkManager extends Observable {
     private static final int OBSERVABLE_CODE = 0;
     private List<Observer> mObservers;

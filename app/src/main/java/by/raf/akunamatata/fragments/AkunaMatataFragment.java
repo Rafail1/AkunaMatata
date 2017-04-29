@@ -20,9 +20,8 @@ import java.util.Observable;
 import java.util.Observer;
 
 import by.raf.akunamatata.R;
+import by.raf.akunamatata.model.DataProvider;
 import by.raf.akunamatata.model.Event;
-import by.raf.akunamatata.model.GlobalVars;
-import by.raf.akunamatata.model.Server;
 import by.raf.akunamatata.model.ServerListener;
 import by.raf.akunamatata.model.managers.NetworkManager;
 import by.raf.akunamatata.model.managers.UserManager;
@@ -34,14 +33,14 @@ public class AkunaMatataFragment extends Fragment implements Observer {
     private UserManager mUserManager;
     private NetworkManager mNetworkManager;
     private RecyclerView mRecyclerView;
-    private Server mServer;
+    private DataProvider mDataProvider;
     private RecyclerView.Adapter mAdapter;
     private GoogleApiClient mGoogleApiClient;
     private RecyclerView.LayoutManager mLayoutManager;
-
     public static AkunaMatataFragment newInstance() {
         return new AkunaMatataFragment();
     }
+
     @Override
     public void update(Observable observable, Object o) {
         if(observable instanceof ServerListener) {
@@ -53,17 +52,12 @@ public class AkunaMatataFragment extends Fragment implements Observer {
             if(NetworkManager.getInstance().isNetworkConnected(getActivity())) {
                 if(!mUserManager.isAuth()) {
                     mUserManager.auth(mGoogleApiClient);
-                } else {
-                    mServer.init();
                 }
             } else {
                 getActivity().invalidateOptionsMenu();
             }
         } else if(observable instanceof UserManager) {
             getActivity().invalidateOptionsMenu();
-            if (mUserManager.isAuth()) {
-                mServer.init();
-            }
         }
     }
     @Override
@@ -71,7 +65,7 @@ public class AkunaMatataFragment extends Fragment implements Observer {
         super.onCreate(savedInstanceState);
         mUserManager = UserManager.getInstance();
         mNetworkManager = NetworkManager.getInstance();
-        mServer = Server.getInstance();
+        mDataProvider = DataProvider.getInstance(getContext());
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
@@ -88,7 +82,7 @@ public class AkunaMatataFragment extends Fragment implements Observer {
         super.onStart();
         mUserManager.addObserver(this);
         mNetworkManager.addObserver(this);
-        mServer.addObserver(this);
+        mDataProvider.addObserver(this);
         mNetworkManager.registerReceiver(getContext());
         mGoogleApiClient.connect();
     }
@@ -97,7 +91,7 @@ public class AkunaMatataFragment extends Fragment implements Observer {
     public void onStop() {
         mUserManager.deleteObserver(this);
         mNetworkManager.deleteObserver(this);
-        mServer.deleteObserver(this);
+        mDataProvider.deleteObserver(this);
         mNetworkManager.unregisterReceiver(getContext());
         mGoogleApiClient.disconnect();
         super.onStop();
@@ -115,7 +109,7 @@ public class AkunaMatataFragment extends Fragment implements Observer {
         mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        mAdapter = new EventAdapter(getActivity(), mServer.getEventList());
+        mAdapter = new EventAdapter(getActivity(), mDataProvider.getEventList());
         mRecyclerView.setAdapter(mAdapter);
 
         return v;

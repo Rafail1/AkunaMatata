@@ -52,7 +52,7 @@
     <string name="msg_contacts_failed">Get contacts failed.</string>
 
     <!-- TODO(user): replace with your real server client ID -->
-    <!-- Server Client ID.  This should be a valid Web OAuth 2.0 Client ID obtained
+    <!-- DataProvider Client ID.  This should be a valid Web OAuth 2.0 Client ID obtained
          from https://console.developers.google.com/ -->
     <string name="server_client_id">896228080401-ip0rnvgvd7nq8168hbthe7shv663ve79.apps.googleusercontent.com</string>
     <string name="server_client_secret">WDVSb20xdBvtpBfjLvvy5qqE</string>

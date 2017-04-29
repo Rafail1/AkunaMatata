@@ -4,7 +4,7 @@ package by.raf.akunamatata.model;
  * Created by raf on 4/26/17.
  */
 
-class Category extends Entity {
+public class Category extends Entity {
     private String mId;
     private String mName;
     public Category() {}

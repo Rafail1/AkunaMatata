@@ -21,37 +21,6 @@ public class Event extends Entity {
 
     }
 
-    private Event(String author, String title, String description, String pictureUri, HashMap<String, Boolean> categoryIds) {
-        mAuthor = author;
-        mTitle = title;
-        mDescription = description;
-        mPicture = pictureUri;
-        mCategoryIds = categoryIds;
-    }
-
-    private Event(String author, String title, String description, String pictureUri, HashMap<String, Boolean> categoryIds,
-                  long dateStart, long dateEnd) {
-        this(author, title, description, pictureUri, categoryIds);
-        mDateStart = dateStart;
-        mDateEnd = dateEnd;
-
-    }
-
-    public Event(String author, String title, String description, String pictureUri, HashMap<String, Boolean> categoryIds,
-                 long dateStart, long dateEnd,
-                 HashMap<String, Boolean> users) {
-        this(author, title, description, pictureUri, categoryIds, dateStart, dateEnd);
-        mUsers = users;
-
-    }
-
-    public Event(String author, String title, String description, String pictureUri, HashMap<String, Boolean> categoryIds,
-                 HashMap<String, Boolean> users) {
-        this(author, title, description, pictureUri, categoryIds);
-        mUsers = users;
-    }
-
-
     public String getAuthor() {
         return mAuthor;
     }

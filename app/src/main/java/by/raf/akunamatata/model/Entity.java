@@ -1,6 +1,6 @@
 package by.raf.akunamatata.model;
 
-class Entity {
+public class Entity {
     private String mId;
 
     public String getId() {

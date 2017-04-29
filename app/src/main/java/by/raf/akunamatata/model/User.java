@@ -1,8 +1,10 @@
 package by.raf.akunamatata.model;
 
 import android.location.Location;
-class User extends Entity {
+public class User extends Entity {
     private String mId;
+    private String mName;
+    private String mLastName;
     private int mSex;
     private long mBirthDay;
     private String mPicture;
@@ -13,21 +15,23 @@ class User extends Entity {
     public User() {
 
     }
-    public User(String id, int sex, String status) {
+    public User(String id, String name, String last_name, int sex, String status) {
         mId = id;
+        mName = name;
+        mLastName = last_name;
         mSex = sex;
         mStatus = status;
     }
-    public User(String id, int sex, String status, long birthDay) {
-        this(id, sex, status);
+    public User(String id, String name, String last_name, int sex, String status, long birthDay) {
+        this(id, name, last_name, sex, status);
         mBirthDay = birthDay;
     }
-    public User(String id, int sex, String status, long birthDay, String picture) {
-        this(id, sex, status, birthDay);
+    public User(String id, String name, String last_name, int sex, String status, long birthDay, String picture) {
+        this(id, name, last_name, sex, status, birthDay);
         mPicture = picture;
     }
-    public User(String id, int sex, String status, long birthDay, String picture, Location location) {
-        this(id, sex, status, birthDay, picture);
+    public User(String id, String name, String last_name, int sex, String status, long birthDay, String picture, Location location) {
+        this(id, name, last_name, sex, status, birthDay, picture);
         lat = location.getLatitude();
         lon = location.getLongitude();
     }
@@ -81,5 +85,29 @@ class User extends Entity {
 
     public void setBirthDay(long birthDay) {
         mBirthDay = birthDay;
+    }
+
+    public String getName() {
+        return mName;
+    }
+
+    public void setName(String name) {
+        mName = name;
+    }
+
+    public String getLastName() {
+        return mLastName;
+    }
+
+    public void setLastName(String lastName) {
+        mLastName = lastName;
+    }
+
+    public String getPicture() {
+        return mPicture;
+    }
+
+    public void setPicture(String picture) {
+        mPicture = picture;
     }
 }

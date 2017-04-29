@@ -8,32 +8,33 @@ import android.provider.BaseColumns;
 
 import java.util.HashMap;
 
+import by.raf.akunamatata.model.Category;
 import by.raf.akunamatata.model.Entity;
-import by.raf.akunamatata.model.User;
-import by.raf.akunamatata.model.db.wrappers.UserCursorWrapper;
+import by.raf.akunamatata.model.db.wrappers.CategoryWrapper;
 
-public class UserTableHelper extends DatabaseHelper {
-    private static UserTableHelper instance;
+public class CategoryHelper extends DatabaseHelper {
+    private static CategoryHelper instance;
 
-    public static UserTableHelper getInstance(Context context) {
+    public static CategoryHelper getInstance(Context context) {
         if (instance == null) {
-            instance = new UserTableHelper(context);
+            instance = new CategoryHelper(context);
         }
         return instance;
     }
 
-    private UserTableHelper(Context context) {
+    private CategoryHelper(Context context) {
         super(context);
-    }
 
+    }
 
     @Override
     synchronized public void deleteEntry(Entity entity) {
+        Category category = (Category) entity;
         SQLiteDatabase mDatabase = null;
         try {
             mDatabase = getWritableDatabase();
             mDatabase.delete(EntrySet.TABLE_NAME, EntrySet.COLUMN_NAME_ENTRY_ID + " = ?",
-                    new String[]{entity.getId()});
+                    new String[]{category.getId()});
         } finally {
             if (mDatabase != null && mDatabase.isOpen()) {
                 mDatabase.close();
@@ -44,29 +45,28 @@ public class UserTableHelper extends DatabaseHelper {
 
     @Override
     synchronized public void updateEntry(Entity entity) {
-        ContentValues values = getContentValues(entity);
+        ContentValues cv = getContentValues(entity);
         SQLiteDatabase mDatabase = null;
         try {
             mDatabase = getWritableDatabase();
-            mDatabase.update(EntrySet.TABLE_NAME, values, EntrySet.COLUMN_NAME_ENTRY_ID + " = ?",
+            mDatabase.update(EntrySet.TABLE_NAME, cv, EntrySet.COLUMN_NAME_ENTRY_ID + " = ?",
                     new String[]{entity.getId()});
         } finally {
             if (mDatabase != null && mDatabase.isOpen()) {
                 mDatabase.close();
             }
         }
-
     }
 
     @Override
     synchronized public void addEntry(Entity entity) {
-        ContentValues contentValues = getContentValues(entity);
+        ContentValues cv = getContentValues(entity);
         SQLiteDatabase mDatabase = null;
         try {
             mDatabase = getWritableDatabase();
             if (!exists(mDatabase, EntrySet.TABLE_NAME, EntrySet.COLUMN_NAME_ENTRY_ID + " = ?",
                     new String[]{entity.getId()})) {
-                mDatabase.insert(EntrySet.TABLE_NAME, null, contentValues);
+                mDatabase.insert(EntrySet.TABLE_NAME, null, cv);
             }
         } finally {
             if (mDatabase != null && mDatabase.isOpen()) {
@@ -77,34 +77,27 @@ public class UserTableHelper extends DatabaseHelper {
 
     @Override
     protected <T extends Entity> ContentValues getContentValues(T entity) {
-        User user = (User) entity;
+        Category category = (Category) entity;
         ContentValues cv = new ContentValues();
-        cv.put(EntrySet.COLUMN_NAME_ENTRY_ID, user.getId());
-        cv.put(EntrySet.COLUMN_NAME_NAME, user.getName());
-        cv.put(EntrySet.COLUMN_NAME_LAST_NAME, user.getLastName());
-        cv.put(EntrySet.COLUMN_NAME_BIRTHDAY, user.getBirthDay());
-        cv.put(EntrySet.COLUMN_NAME_LAT, user.getLat());
-        cv.put(EntrySet.COLUMN_NAME_LON, user.getLon());
-        cv.put(EntrySet.COLUMN_NAME_SEX, user.getSex());
-        cv.put(EntrySet.COLUMN_NAME_STATUS, user.getStatus());
+        cv.put(EntrySet.COLUMN_NAME_ENTRY_ID, category.getId());
+        cv.put(EntrySet.COLUMN_NAME_NAME, category.getName());
         return cv;
     }
 
     @Override
-    synchronized public HashMap<String, User> getAllEntries(String where, String[] whereArgs) {
-        SQLiteDatabase mDatabase = null;
+    synchronized public HashMap<String, Category> getAllEntries(String where, String[] whereArgs) {
+        HashMap<String, Category> map = new HashMap<>();
         Cursor cursor = null;
-        HashMap<String, User> map = new HashMap<>();
+        SQLiteDatabase mDatabase = null;
         try {
             mDatabase = getWritableDatabase();
-            cursor = mDatabase.query(EntrySet.TABLE_NAME, null, where, whereArgs,
-                    null, null, null);
-            UserCursorWrapper wrapper = new UserCursorWrapper(cursor);
 
+            cursor = mDatabase.query(EntrySet.TABLE_NAME, null, where, whereArgs, null, null, null);
+            CategoryWrapper wrapper = new CategoryWrapper(cursor);
             if (cursor.moveToFirst()) {
                 do {
-                    User user = wrapper.getEntry();
-                    map.put(user.getId(), user);
+                    Category category = wrapper.getEntry();
+                    map.put(category.getId(), category);
                 } while (cursor.moveToNext());
             }
         } finally {
@@ -116,21 +109,14 @@ public class UserTableHelper extends DatabaseHelper {
             }
         }
 
+
         return map;
     }
 
-
     public static abstract class EntrySet implements BaseColumns {
-        public static final String TABLE_NAME = "user";
+        public static final String TABLE_NAME = "category";
         public static final String COLUMN_NAME_ENTRY_ID = "id";
         public static final String COLUMN_NAME_NAME = "name";
-        public static final String COLUMN_NAME_LAST_NAME = "last_name";
-        public static final String COLUMN_NAME_SEX = "sex";
-        public static final String COLUMN_NAME_PICTURE = "picture";
-        public static final String COLUMN_NAME_BIRTHDAY = "birthday";
-        public static final String COLUMN_NAME_STATUS = "status";
-        public static final String COLUMN_NAME_LAT = "lat";
-        public static final String COLUMN_NAME_LON = "lon";
     }
 
 
