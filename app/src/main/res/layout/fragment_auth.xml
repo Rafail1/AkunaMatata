@@ -7,7 +7,7 @@
               android:background="@color/blue_grey_700"
               android:orientation="vertical"
               android:weightSum="4"
-              tools:context=".activities.SignInActivity">
+              tools:context=".activities.GoogleSignInActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,14 +16,6 @@
         android:gravity="center_horizontal"
         android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/google_icon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginBottom="10dp"
-            android:layout_marginTop="@dimen/g_top_margin"
-            android:contentDescription="@string/desc_google_icon"
-            android:src="@drawable/googleg_color"/>
 
         <TextView
             android:id="@+id/title_text"
@@ -54,15 +46,16 @@
             android:scrollbars="vertical"
             android:textColor="@android:color/white"
             android:textSize="14sp"/>
+
         <Button
             android:id="@+id/button_start_akuna"
-            android:theme="@style/ThemeOverlay.MyDarkButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="gone"
             android:layout_gravity="center"
-            android:textColor="@android:color/white"
             android:text="@string/start_akuna"
+            android:textColor="@android:color/white"
+            android:theme="@style/ThemeOverlay.MyDarkButton"
+            android:visibility="gone"
             tools:visibility="visible"/>
 
     </LinearLayout>
@@ -81,6 +74,15 @@
             android:layout_centerInParent="true"
             android:visibility="visible"
             tools:visibility="gone"/>
+
+        <Button
+            android:id="@+id/continue_without_sign"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/continue_without_sign"
+            android:theme="@style/ThemeOverlay.MyDarkButton"
+            android:visibility="invisible"/>
+
         <LinearLayout
             android:id="@+id/sign_out_and_disconnect"
             android:layout_width="match_parent"
@@ -92,15 +94,24 @@
             android:visibility="gone"
             tools:visibility="visible">
 
-        <Button
-            android:id="@+id/sign_out_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/sign_out"
-            android:theme="@style/ThemeOverlay.MyDarkButton"
-            android:visibility="visible"/>
-</LinearLayout>
+            <Button
+                android:id="@+id/sign_out_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/sign_out"
+                android:theme="@style/ThemeOverlay.MyDarkButton"
+                android:visibility="visible"/>
+
+            <Button
+                android:id="@+id/disconnect_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/disconnect"
+                android:theme="@style/ThemeOverlay.MyDarkButton"/>
+
+        </LinearLayout>
 
     </RelativeLayout>
 

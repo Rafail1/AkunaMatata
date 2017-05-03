@@ -59,4 +59,12 @@
     <string name="menu_sign_in">Авторизация</string>
     <string name="menu_sign_out">Выйти</string>
     <string name="menu_offline">offline</string>
+    <string name="button_will_be">Я пойду!</string>
+    <string name="button_will_not_be">Не пойду(((</string>
+    <string name="continue_without_sign">Продолжить не авторизованным</string>
+
+    <string name="google_status_fmt">User: %s</string>
+    <string name="firebaseui_title_text">FirebaseUI Auth</string>
+    <string name="firebase_status_fmt">Firebase User: %s</string>
+    <string name="button_request">Как вы там?</string>
 </resources>

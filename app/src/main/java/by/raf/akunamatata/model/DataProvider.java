@@ -1,7 +1,6 @@
 package by.raf.akunamatata.model;
 
 import android.content.Context;
-import android.support.v4.app.Fragment;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -9,17 +8,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Observer;
 
-import by.raf.akunamatata.model.db.CategoryHelper;
-import by.raf.akunamatata.model.db.EventTableHelper;
-import by.raf.akunamatata.model.db.UserTableHelper;
-import by.raf.akunamatata.model.db.reference.EventCategory;
-import by.raf.akunamatata.model.db.reference.EventUser;
+import by.raf.akunamatata.model.managers.UserManager;
 
-import static by.raf.akunamatata.model.db.DatabaseHelper.ACTION_ADD;
-import static by.raf.akunamatata.model.db.DatabaseHelper.ACTION_DELETE;
-import static by.raf.akunamatata.model.db.DatabaseHelper.ACTION_UPDATE;
+import static by.raf.akunamatata.fragments.AkunaMatataFragment.ADDED;
+import static by.raf.akunamatata.fragments.AkunaMatataFragment.CHANGED;
+import static by.raf.akunamatata.fragments.AkunaMatataFragment.REMOVED;
 
 
 public class DataProvider extends ServerListener {
@@ -30,8 +26,10 @@ public class DataProvider extends ServerListener {
     private HashMap<String, Category> sCategories;
     private HashMap<String, Event> sEvents;
     private HashMap<String, User> sUsers;
-    private ArrayList<Event> mEventList;
+    public ArrayList<Event> mEventList;
+    public User currentUser;
     private static DataProvider instance;
+    public static final String AKUNA_MATATA_PREFERENCES = "by.raf.akunamatata.PREF";
 
     private DataProvider(final Context context) {
         database = FirebaseDatabase.getInstance();
@@ -39,25 +37,24 @@ public class DataProvider extends ServerListener {
         myRefCategories =  database.getReference("akunamatata/categories");
         myRefEvents = database.getReference("akunamatata/events");
         myRefUsers = database.getReference("akunamatata/users");
+
+        myRefEvents.keepSynced(true);
+        myRefCategories.keepSynced(true);
+        myRefUsers.keepSynced(true);
+        currentUser = UserManager.getInstance().getCurrentUser(context);
         sCategories = new HashMap<>();
         sEvents = new HashMap<>();
         sUsers = new HashMap<>();
         mEventList = new ArrayList<>();
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                sEvents = EventTableHelper.getInstance(context).getAllEntries(null, null);
-                sUsers = UserTableHelper.getInstance(context).getAllEntries(null, null);
-                sCategories = CategoryHelper.getInstance(context).getAllEntries(null, null);
-
-                listen(myRefUsers, User.class, sUsers);
-                listen(myRefEvents, Event.class, sEvents);
-                listen(myRefCategories, Category.class, sCategories);
-            }
-        }).start();
+        listen(myRefUsers, User.class, sUsers);
+        listen(myRefEvents, Event.class, sEvents);
+        listen(myRefCategories, Category.class, sCategories);
+//        initData();
 
     }
+
+
+
     public static DataProvider getInstance(Context context) {
         if (instance == null) {
             instance = new DataProvider(context);
@@ -67,37 +64,34 @@ public class DataProvider extends ServerListener {
     }
     public void initData() {
 
-// trash
-//        HashMap<String, Boolean> Categories = new HashMap<>();
-//
-//        for(int i = 0; i < 3; i++) {
-//            String id = myRefCategories.push().getKey();
-//            Category category = new Category(id, "Category" + i);
-//            sCategories.put(id, category);
-//            Categories.put(id,true);
-//        }
-//        sendCategories(sCategories);
-//        final long allDates = System.currentTimeMillis();
-//        HashMap<String, Boolean> users = new HashMap<>();
-//        for(int i = 0; i < 10; i++) {
-//            String id = myRefUsers.push().getKey();
-//            User user = new User(id, "user" + i, "luser" + i, i % 2, "Status" + i,
-//                    allDates, "https://pp.userapi.com/c624731/v624731782/47886/LrF637bGxPw.jpg",
-//                    new Location("service Provider"));
-//            user.setId(id);
-//            sUsers.put(id, user);
-//            users.put(user.getId(), i % 2 == 0);
-//        }
-//        sendUsers(sUsers);
-//
-//        HashMap<String, Event> startMap = new HashMap<>();
-//        for(int i = 0; i < 10; i++) {
-//            String id = myRefEvents.push().getKey();
-//            //String author, String title, String description, String pictureUri, DateStart, DateEnd
-//            Event event = new Event();
-//            startMap.put(id, event);
-//        }
-//        sendEvents(startMap);
+        HashMap<String, Boolean> Categories = new HashMap<>();
+
+        for(int i = 0; i < 3; i++) {
+            String id = myRefCategories.push().getKey();
+            Category category = new Category(id, "Category" + i);
+            sCategories.put(id, category);
+            Categories.put(id,true);
+        }
+        sendCategories(sCategories);
+        final long allDates = System.currentTimeMillis();
+
+
+        HashMap<String, Event> startMap = new HashMap<>();
+        for(int i = 0; i < 10; i++) {
+            String id = myRefEvents.push().getKey();
+            Event event = new Event();
+            event.setId(id);
+            event.setAuthor("Place N" + i);
+            event.setTitle("Event" + i);
+            event.setPicture("https://img.afisha.tut.by/img/340x0s/cover/0f/6/festival-landshaftnoy-arkhitektury-i-dizayna-2017-144834.jpg");
+            event.setCategoryIds(Categories);
+            event.setAuthor("Raf");
+            event.setDateStart(allDates);
+            event.setDateEnd(allDates + 10000);
+            event.setDescription("Description Description Description Description Description Description Description Description");
+            startMap.put(id, event);
+        }
+        sendEvents(startMap);
 
 
     }
@@ -111,49 +105,23 @@ public class DataProvider extends ServerListener {
         myRefUsers.setValue(start);
     }
 
-    @Override
-    public void notifyObservers(Object arg) {
+    public void notifyObservers(int observerId, int action, int pos) {
         for (Observer observer : mObservers) {
-            observer.update(this, arg);
+            int[] args = new int[]{observerId, action, pos};
+            observer.update(this, args);
         }
 
     }
 
-    private void changeBaseEntity(final Entity entity, final int action) {
-        for (final Observer observer : mObservers) {
-                if(observer instanceof Fragment) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (entity instanceof Event) {
-                            EventTableHelper.getInstance(((Fragment) observer).getContext())
-                                    .update(action, entity);
-                            EventCategory.getInstance(((Fragment) observer).getContext())
-                                    .update(action, entity);
-                            EventUser.getInstance(((Fragment) observer).getContext())
-                                    .update(action, entity);
-                        } else if (entity instanceof Category) {
-                            CategoryHelper.getInstance(((Fragment) observer).getContext())
-                                    .update(action, entity);
-                            EventCategory.getInstance(((Fragment) observer).getContext())
-                                    .update(action, entity);
-                        }
-                    }
-                }).start();
-
-            }
-        }
-    }
 
     @Override
     protected <T extends Entity> void onAdded(Entity entity, HashMap<String, T> map) {
         if (entity instanceof Event) {
             if(mEventList.indexOf(entity) == -1) {
                 mEventList.add((Event) entity);
-                notifyObservers(Event.class);
+                notifyObservers(Event.OBSERVER_ID, ADDED, -1);
             }
         }
-        changeBaseEntity(entity, ACTION_ADD);
     }
 
     @Override
@@ -162,11 +130,11 @@ public class DataProvider extends ServerListener {
             for(int i = 0; i < mEventList.size(); i++) {
                 if (mEventList.get(i).getId().equals(entity.getId())) {
                     mEventList.remove(i);
+                    notifyObservers(Event.OBSERVER_ID, REMOVED, i);
+                    break;
                 }
             }
-            notifyObservers(Event.class);
         }
-        changeBaseEntity(entity, ACTION_DELETE);
     }
 
     @Override
@@ -175,10 +143,25 @@ public class DataProvider extends ServerListener {
             for(int i = 0; i < mEventList.size(); i++) {
                 if (mEventList.get(i).getId().equals(entity.getId())) {
                     mEventList.set(i, (Event) entity);
+                    notifyObservers(Event.OBSERVER_ID, CHANGED, i);
+                    break;
                 }
             }
-            notifyObservers(Event.class);
+
         }
-        changeBaseEntity(entity, ACTION_UPDATE);
+    }
+
+    public void updateEntity(Entity entity) {
+        if (entity instanceof Event) {
+            Event event = (Event) entity;
+            Map<String, Object> map = new HashMap<>();
+            map.put(entity.getId(), event);
+            myRefEvents.updateChildren(map);
+        }
+    }
+
+    public void updateCurrentUser(Context context) {
+        currentUser = UserManager.getInstance().getCurrentUser(context);
+        myRefUsers.child(currentUser.getId()).setValue(currentUser);
     }
 }

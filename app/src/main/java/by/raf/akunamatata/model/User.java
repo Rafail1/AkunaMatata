@@ -1,7 +1,34 @@
 package by.raf.akunamatata.model;
 
 import android.location.Location;
-public class User extends Entity {
+
+import java.io.Serializable;
+
+public class User extends Entity implements Serializable {
+    public static final int GENDER_MAN = 1;
+    public static final int GENDER_WOMAN = 1<<1;
+    public static final int GENDER_HZ = 1<<2;
+    public static final int FREE = 1<<3;
+    public static final int REGALE = 1<<4;
+    public static final int DRINK = 1<<5;
+    public static final int SMOKE = 1<<6;
+    public static final int WANT = 1<<7;
+
+    public static final String PREF_FREE = "FREE";
+    public static final String PREF_REGALE = "REGALE";
+    public static final String PREF_DRINK = "DRINK";
+    public static final String PREF_SMOKE = "SMOKE";
+    public static final String PREF_WANT = "WANT";
+    public static final String PREF_LON = "PREF_LON";
+    public static final String PREF_LAT = "PREF_LAT";
+    public static final String PREF_STATUS = "PREF_STATUS";
+    public static final String PREF_LAST_NAME = "LAST_NAME";
+    public static final String PREF_NAME = "NAME";
+    public static final String PREF_GENDER = "GENDER";
+    public static final String PREF_BIRTHDAY = "BIRTHDAY";
+    public static final String PREF_PHOTO = "PHOTO";
+    public static String PREF_ID = "ID";
+
     private String mId;
     private String mName;
     private String mLastName;
@@ -11,10 +38,13 @@ public class User extends Entity {
     private String mStatus;
     private double lat;
     private double lon;
+    private int mFree;
+    private int mDrink;
+    private int mWant;
+    private int mSmoke;
+    private int mRegale;
 
-    public User() {
-
-    }
+    public User() {}
     public User(String id, String name, String last_name, int sex, String status) {
         mId = id;
         mName = name;
@@ -109,5 +139,37 @@ public class User extends Entity {
 
     public void setPicture(String picture) {
         mPicture = picture;
+    }
+
+
+    public void setFree(int free) {
+        mFree = free;
+    }
+
+    public void setDrink(int drink) {
+        mDrink = drink;
+    }
+
+    public void setWant(int want) {
+        mWant = want;
+    }
+
+    public void setSmoke(int smoke) {
+        mSmoke = smoke;
+    }
+
+    public void setRegale(int regale) {
+        mRegale = regale;
+    }
+
+    public Integer getMask() {
+        Integer mask = 0;
+        mask |= mSex;
+        mask |= mFree;
+        mask |= mDrink;
+        mask |= mRegale;
+        mask |= mSmoke;
+        mask |= mWant;
+        return mask;
     }
 }

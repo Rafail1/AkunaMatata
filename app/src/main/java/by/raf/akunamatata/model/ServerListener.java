@@ -55,7 +55,6 @@ public abstract class ServerListener extends Observable {
                 T entity = dataSnapshot.getValue(EntityClass);
                 String id = dataSnapshot.getKey();
                 entity.setId(id);
-
                 add(entity, map);
             }
 
@@ -94,6 +93,5 @@ public abstract class ServerListener extends Observable {
     public synchronized void deleteObserver(Observer o) {
         mObservers.remove(o);
     }
-
 
 }

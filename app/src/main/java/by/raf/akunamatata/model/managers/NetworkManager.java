@@ -37,7 +37,11 @@ public class NetworkManager extends Observable {
     }
 
     public void unregisterReceiver(Context context) {
-        context.unregisterReceiver(mNetworkChangeReceiver);
+        try {
+            context.unregisterReceiver(mNetworkChangeReceiver);
+        } catch (Exception e) {
+
+        }
     }
 
     public boolean isNetworkConnected(Context context) {

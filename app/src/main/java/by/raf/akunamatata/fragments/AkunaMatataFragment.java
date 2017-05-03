@@ -1,5 +1,6 @@
 package by.raf.akunamatata.fragments;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,9 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -30,73 +29,61 @@ import by.raf.akunamatata.recyclerdata.EventAdapter;
 
 
 public class AkunaMatataFragment extends Fragment implements Observer {
-    private UserManager mUserManager;
+    public static final int CHANGED = 0;
+    public static final int ADDED = 1;
+    public static final int REMOVED = 2;
     private NetworkManager mNetworkManager;
     private RecyclerView mRecyclerView;
     private DataProvider mDataProvider;
     private RecyclerView.Adapter mAdapter;
-    private GoogleApiClient mGoogleApiClient;
+    private Callbacks mCallbacks;
     private RecyclerView.LayoutManager mLayoutManager;
     public static AkunaMatataFragment newInstance() {
         return new AkunaMatataFragment();
     }
-
-    @Override
-    public void update(Observable observable, Object o) {
-        if(observable instanceof ServerListener) {
-            Class entityClass = (Class) o;
-            if(entityClass == Event.class) {
-                mAdapter.notifyDataSetChanged();
-            }
-        } else if(observable instanceof NetworkManager) {
-            if(NetworkManager.getInstance().isNetworkConnected(getActivity())) {
-                if(!mUserManager.isAuth()) {
-                    mUserManager.auth(mGoogleApiClient);
-                }
-            } else {
-                getActivity().invalidateOptionsMenu();
-            }
-        } else if(observable instanceof UserManager) {
-            getActivity().invalidateOptionsMenu();
-        }
+    public interface Callbacks {
+        void onEventSelected(int eventPosition);
     }
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mUserManager = UserManager.getInstance();
         mNetworkManager = NetworkManager.getInstance();
         mDataProvider = DataProvider.getInstance(getContext());
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-        mGoogleApiClient = new GoogleApiClient.Builder(getContext())
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
-        mUserManager.auth(mGoogleApiClient);
+
         setHasOptionsMenu(true);
+    }
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mCallbacks = (Callbacks) context;
     }
 
     @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks = null;
+    }
+    @Override
     public void onStart() {
         super.onStart();
-        mUserManager.addObserver(this);
         mNetworkManager.addObserver(this);
         mDataProvider.addObserver(this);
         mNetworkManager.registerReceiver(getContext());
-        mGoogleApiClient.connect();
+        if(mAdapter != null) {
+            mAdapter.notifyDataSetChanged();
+        } else {
+            mAdapter = new EventAdapter(getActivity(), mCallbacks, mDataProvider.getEventList());
+            mRecyclerView.setAdapter(mAdapter);
+        }
     }
 
     @Override
     public void onStop() {
-        mUserManager.deleteObserver(this);
         mNetworkManager.deleteObserver(this);
         mDataProvider.deleteObserver(this);
         mNetworkManager.unregisterReceiver(getContext());
-        mGoogleApiClient.disconnect();
         super.onStop();
     }
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -109,9 +96,6 @@ public class AkunaMatataFragment extends Fragment implements Observer {
         mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        mAdapter = new EventAdapter(getActivity(), mDataProvider.getEventList());
-        mRecyclerView.setAdapter(mAdapter);
-
         return v;
     }
 
@@ -121,10 +105,14 @@ public class AkunaMatataFragment extends Fragment implements Observer {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.menu, menu);
         MenuItem exit = menu.findItem(R.id.menu_sign_out);
-        if(!mUserManager.isAuth() || !NetworkManager.getInstance().isNetworkConnected(getActivity())) {
-            exit.setTitle(R.string.menu_offline);
+        if(NetworkManager.getInstance().isNetworkConnected(getActivity())) {
+            if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+                exit.setTitle(R.string.menu_sign_in);
+            } else {
+                exit.setTitle(R.string.menu_sign_out);
+            }
         } else {
-            exit.setTitle(R.string.menu_sign_out);
+            exit.setTitle(R.string.menu_offline);
         }
     }
 
@@ -132,12 +120,42 @@ public class AkunaMatataFragment extends Fragment implements Observer {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_sign_out:
-                if(mUserManager.isAuth()) {
-                    mUserManager.logout(getContext(), mGoogleApiClient);
+                if(NetworkManager.getInstance().isNetworkConnected(getActivity())) {
+                    FirebaseAuth.getInstance().signOut();
+                    UserManager.getInstance().logout(getContext());
                 }
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    @Override
+    public void update(Observable observable, Object o) {
+        if(observable instanceof ServerListener) {
+            int[] args = (int[]) o;
+            if(args[0] == Event.OBSERVER_ID) {
+                switch (args[1]) {
+                    case CHANGED:
+                        mAdapter.notifyItemChanged(args[2]);
+                        break;
+                    case REMOVED:
+                        mAdapter.notifyItemRemoved(args[2]);
+                        break;
+                    case ADDED:
+                        mAdapter.notifyItemInserted(mAdapter.getItemCount());
+                }
+
+            }
+        } else if(observable instanceof NetworkManager) {
+            if(NetworkManager.getInstance().isNetworkConnected(getActivity())) {
+                getActivity().invalidateOptionsMenu();
+            } else {
+                getActivity().invalidateOptionsMenu();
+                mAdapter.notifyDataSetChanged();
+            }
+        }
+    }
+
+
 }

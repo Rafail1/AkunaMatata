@@ -1,43 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/cardView"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginBottom="2dp"
-    android:clickable="true"
-    android:focusable="true"
-    android:foreground="?android:attr/selectableItemBackground"
-    app:cardCornerRadius="2dp"
-    app:cardElevation="2dp">
+<ScrollView  xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
 
     <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="4dp">
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="vertical">
 
         <ImageView
-            android:id="@+id/event_image"
-            android:contentDescription="@string/app_name"
-            android:layout_width="100dp"
-            android:layout_height="100dp"/>
+            android:id="@+id/detail_event_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
         <TextView
-            android:id="@+id/event_title"
+            android:id="@+id/detail_event_author"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/detail_event_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
         <TextView
-            android:id="@+id/event_detail_text"
+            android:id="@+id/detail_event_address"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
+
         <TextView
-            android:id="@+id/event_count"
-            android:layout_width="40dp"
-            android:background="@drawable/circle_text_view"
-            android:layout_height="40dp"/>
+            android:id="@+id/detail_event_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
 
+        <com.hookedonplay.decoviewlib.DecoView
+            android:id="@+id/dynamicArcView"
+            android:layout_width="200dp"
+            android:layout_height="200dp"/>
 
+        <Button
+            android:id="@+id/detail_event_i_will"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/detail_event_request"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
     </LinearLayout>
-
-</android.support.v7.widget.CardView>
+</ScrollView>

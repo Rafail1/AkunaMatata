@@ -7,15 +7,17 @@ import java.util.HashMap;
  */
 
 public class Event extends Entity {
-    private String mAuthor;
-    private String mTitle;
-    private HashMap<String, Boolean> mUsers;
-    private String mPicture;
-    private String mDescription;
+    public static int OBSERVER_ID = 1;
+    private String mAuthor = "";
+    private String mTitle = "";
+    private HashMap<String, Integer> mUsers;
+    private String mPicture  = "";
+    private String mDescription  = "";
     private HashMap<String, Boolean> mCategoryIds;
     private String mId;
     private long mDateStart;
     private long mDateEnd;
+    private String mAddress  = "";
 
     public Event() {
 
@@ -54,11 +56,14 @@ public class Event extends Entity {
         mDescription = description;
     }
 
-    public HashMap<String, Boolean> getUsers() {
+    public HashMap<String, Integer> getUsers() {
+        if (mUsers == null) {
+            mUsers = new HashMap<>();
+        }
         return mUsers;
     }
 
-    public void setUsers(HashMap<String, Boolean> users) {
+    public void setUsers(HashMap<String, Integer> users) {
         mUsers = users;
     }
 
@@ -99,5 +104,17 @@ public class Event extends Entity {
 
     public void setCategoryIds(HashMap<String, Boolean> categoryIds) {
         mCategoryIds = categoryIds;
+    }
+
+    public String setAddress() {
+        return mAddress;
+    }
+
+    public String getAddress() {
+        return mAddress;
+    }
+
+    public void setAddress(String address) {
+        mAddress = address;
     }
 }

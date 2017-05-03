@@ -1,12 +1,13 @@
 package by.raf.akunamatata.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 
 import by.raf.akunamatata.fragments.AkunaMatataFragment;
+import by.raf.akunamatata.fragments.EventFragment;
 
-public class AkunaMatataActivity extends SingleFragmentActivity {
-
+public class AkunaMatataActivity extends SingleFragmentActivity implements AkunaMatataFragment.Callbacks {
     @Override
     public Fragment createFragment() {
         return AkunaMatataFragment.newInstance();
@@ -19,4 +20,15 @@ public class AkunaMatataActivity extends SingleFragmentActivity {
         startActivity(a);
     }
 
+    public static Intent newIntent(Context context) {
+        Intent intent = new Intent(context, AkunaMatataActivity.class);
+        intent.setFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        return intent;
+    }
+
+
+    @Override
+    public void onEventSelected(int eventPosition) {
+        startActivity(EventActivity.newIntent(this, eventPosition));
+    }
 }
