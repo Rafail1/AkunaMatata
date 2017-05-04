@@ -8,17 +8,17 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Observer;
 
 import by.raf.akunamatata.model.managers.UserManager;
 
-import static by.raf.akunamatata.fragments.AkunaMatataFragment.ADDED;
-import static by.raf.akunamatata.fragments.AkunaMatataFragment.CHANGED;
-import static by.raf.akunamatata.fragments.AkunaMatataFragment.REMOVED;
+import static by.raf.akunamatata.model.Event.ADDED;
+import static by.raf.akunamatata.model.Event.CHANGED;
+import static by.raf.akunamatata.model.Event.REMOVED;
 
 
 public class DataProvider extends ServerListener {
+    private final DatabaseReference myRefPhotos;
     private FirebaseDatabase database;
     private DatabaseReference myRefCategories;
     private DatabaseReference myRefEvents;
@@ -37,6 +37,7 @@ public class DataProvider extends ServerListener {
         myRefCategories =  database.getReference("akunamatata/categories");
         myRefEvents = database.getReference("akunamatata/events");
         myRefUsers = database.getReference("akunamatata/users");
+        myRefPhotos = database.getReference("akunamatata/photos");
 
         myRefEvents.keepSynced(true);
         myRefCategories.keepSynced(true);

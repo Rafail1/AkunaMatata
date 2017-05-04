@@ -18,26 +18,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".activities.AkunaMatataActivity"/>
+        <activity android:name=".activities.PhotosActivity"/>
         <activity android:parentActivityName=".activities.AkunaMatataActivity"
                   android:name=".activities.EventActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.AkunaMatataActivity" />
         </activity>
-        <service
-            android:name=".services.MyFirebaseMessagingService">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
-            </intent-filter>
-        </service>
-
-        <service
-            android:name=".services.MyFirebaseInstanceIDService">
-            <intent-filter>
-                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
-            </intent-filter>
-        </service>
-
         <activity android:name=".activities.GoogleSignInActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

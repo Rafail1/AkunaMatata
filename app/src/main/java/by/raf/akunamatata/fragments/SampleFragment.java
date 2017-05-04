@@ -9,14 +9,11 @@ import android.util.TypedValue;
 import com.hookedonplay.decoviewlib.DecoView;
 
 import by.raf.akunamatata.R;
+import by.raf.akunamatata.myviews.MyDecoView;
 
 abstract public class SampleFragment extends Fragment {
     protected final String TAG = getClass().getSimpleName();
-    static final public int COLOR_BLUE = Color.parseColor("#1D76D2");
-    static final public int COLOR_PINK = Color.parseColor("#FF4081");
-    static final public int COLOR_YELLOW = Color.parseColor("#FFC107");
-    static final public int COLOR_EDGE = Color.parseColor("#22000000");
-    static final public int COLOR_BACK = Color.parseColor("#0166BB66");
+
     static final public float mSeriesMax = 100f;
 
     private boolean mInitialized;
@@ -86,12 +83,12 @@ abstract public class SampleFragment extends Fragment {
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, base, getResources().getDisplayMetrics());
     }
 
-    protected DecoView getDecoView() {
+    protected MyDecoView getDecoView() {
         if (getView() == null) {
             return null;
         }
         try {
-            return (DecoView) getView().findViewById(R.id.dynamicArcView);
+            return (MyDecoView) getView().findViewById(R.id.dynamicArcView);
         } catch (NullPointerException npe) {
             Log.e(TAG, "Unable to resolve view " + npe.getMessage());
         }

@@ -32,12 +32,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
-        <com.hookedonplay.decoviewlib.DecoView
+        <by.raf.akunamatata.myviews.MyDecoView
             android:id="@+id/dynamicArcView"
             android:layout_width="200dp"
             android:layout_height="200dp"/>
 
-        <Button
+        <by.raf.akunamatata.myviews.IWill
             android:id="@+id/detail_event_i_will"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
