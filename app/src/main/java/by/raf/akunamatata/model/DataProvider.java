@@ -18,7 +18,7 @@ import static by.raf.akunamatata.model.Event.REMOVED;
 
 
 public class DataProvider extends ServerListener {
-    private final DatabaseReference myRefPhotos;
+
     private FirebaseDatabase database;
     private DatabaseReference myRefCategories;
     private DatabaseReference myRefEvents;
@@ -31,13 +31,16 @@ public class DataProvider extends ServerListener {
     private static DataProvider instance;
     public static final String AKUNA_MATATA_PREFERENCES = "by.raf.akunamatata.PREF";
 
+    public FirebaseDatabase getDatabase() {
+        return database;
+    }
+
     private DataProvider(final Context context) {
         database = FirebaseDatabase.getInstance();
         database.setPersistenceEnabled(true);
-        myRefCategories =  database.getReference("akunamatata/categories");
+        myRefCategories = database.getReference("akunamatata/categories");
         myRefEvents = database.getReference("akunamatata/events");
         myRefUsers = database.getReference("akunamatata/users");
-        myRefPhotos = database.getReference("akunamatata/photos");
 
         myRefEvents.keepSynced(true);
         myRefCategories.keepSynced(true);
@@ -55,30 +58,29 @@ public class DataProvider extends ServerListener {
     }
 
 
-
     public static DataProvider getInstance(Context context) {
         if (instance == null) {
             instance = new DataProvider(context);
-
         }
         return instance;
     }
+
     public void initData() {
 
         HashMap<String, Boolean> Categories = new HashMap<>();
 
-        for(int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; i++) {
             String id = myRefCategories.push().getKey();
             Category category = new Category(id, "Category" + i);
             sCategories.put(id, category);
-            Categories.put(id,true);
+            Categories.put(id, true);
         }
         sendCategories(sCategories);
         final long allDates = System.currentTimeMillis();
 
 
         HashMap<String, Event> startMap = new HashMap<>();
-        for(int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; i++) {
             String id = myRefEvents.push().getKey();
             Event event = new Event();
             event.setId(id);
@@ -96,13 +98,20 @@ public class DataProvider extends ServerListener {
 
 
     }
-    public ArrayList<Event> getEventList() {return mEventList;}
 
-    private void sendCategories(HashMap<String, Category> sCategories) {myRefCategories.setValue(sCategories);}
+    public ArrayList<Event> getEventList() {
+        return mEventList;
+    }
 
-    private void sendEvents(Map<String, Event> start) {myRefEvents.setValue(start);}
+    private void sendCategories(HashMap<String, Category> sCategories) {
+        myRefCategories.setValue(sCategories);
+    }
 
-    private void sendUsers(HashMap<String,User> start) {
+    private void sendEvents(Map<String, Event> start) {
+        myRefEvents.setValue(start);
+    }
+
+    private void sendUsers(HashMap<String, User> start) {
         myRefUsers.setValue(start);
     }
 
@@ -118,7 +127,7 @@ public class DataProvider extends ServerListener {
     @Override
     protected <T extends Entity> void onAdded(Entity entity, HashMap<String, T> map) {
         if (entity instanceof Event) {
-            if(mEventList.indexOf(entity) == -1) {
+            if (mEventList.indexOf(entity) == -1) {
                 mEventList.add((Event) entity);
                 notifyObservers(Event.OBSERVER_ID, ADDED, -1);
             }
@@ -128,7 +137,7 @@ public class DataProvider extends ServerListener {
     @Override
     protected <T extends Entity> void onRemoved(Entity entity, HashMap<String, T> map) {
         if (entity instanceof Event) {
-            for(int i = 0; i < mEventList.size(); i++) {
+            for (int i = 0; i < mEventList.size(); i++) {
                 if (mEventList.get(i).getId().equals(entity.getId())) {
                     mEventList.remove(i);
                     notifyObservers(Event.OBSERVER_ID, REMOVED, i);
@@ -141,7 +150,7 @@ public class DataProvider extends ServerListener {
     @Override
     protected <T extends Entity> void onChanged(Entity entity, HashMap<String, T> map) {
         if (entity instanceof Event) {
-            for(int i = 0; i < mEventList.size(); i++) {
+            for (int i = 0; i < mEventList.size(); i++) {
                 if (mEventList.get(i).getId().equals(entity.getId())) {
                     mEventList.set(i, (Event) entity);
                     notifyObservers(Event.OBSERVER_ID, CHANGED, i);

@@ -1,10 +1,14 @@
 package by.raf.akunamatata.model;
 
+import android.net.Uri;
+
 public class Photo extends Entity {
     private String mId;
     private String mFromUser;
     private long mDateCreate;
     private String  mEventId;
+    private String mPath;
+    private String mUri;
 
     public String getFromUser() {
         return mFromUser;
@@ -38,5 +42,21 @@ public class Photo extends Entity {
     @Override
     public void setId(String id) {
         mId = id;
+    }
+
+    public void setPath(String path) {
+        mPath = path;
+    }
+
+    public String getPath() {
+        return mPath;
+    }
+
+    public String getUri() {
+        return mUri;
+    }
+
+    public void setUri(String uri) {
+        mUri = uri;
     }
 }
