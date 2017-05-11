@@ -1,40 +1,33 @@
 package by.raf.akunamatata.fragments;
 
-import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import by.raf.akunamatata.R;
+import by.raf.akunamatata.activities.PhotosPageViewActivity;
 import by.raf.akunamatata.model.DataProvider;
 import by.raf.akunamatata.model.Event;
 import by.raf.akunamatata.model.Photo;
@@ -101,9 +94,9 @@ public class PhotosFragment extends Fragment {
         myRefPhotos.orderByChild("eventId").equalTo(mEvent.getId()).addChildEventListener(mPhotoListener);
     }
 
-    public static PhotosFragment newInstance(String pos) {
+    public static PhotosFragment newInstance(int pos) {
         Bundle args = new Bundle();
-        args.putString(ARG_EVENT_POS, pos);
+        args.putInt(ARG_EVENT_POS, pos);
         PhotosFragment fragment = new PhotosFragment();
         fragment.setArguments(args);
         return fragment;
@@ -149,44 +142,49 @@ public class PhotosFragment extends Fragment {
 
         public void bindPhoto(final Photo photo) {
             mPhoto = photo;
-            new Picasso.Builder(getContext().getApplicationContext())
-                    .build()
-                    .load(photo.getUri())
-                    .networkPolicy(NetworkPolicy.OFFLINE)
-                    .placeholder(R.drawable.ic_stat_ic_notification)
-                    .error(R.drawable.uploading)
-                    .centerCrop().resize(100, 100)
-                    .into(mImageView, new Callback() {
-                        @Override
-                        public void onSuccess() {
-                            mImageView.setOnClickListener(PhotoHolder.this);
-                        }
 
+            mImageView.getViewTreeObserver()
+                    .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                         @Override
-                        public void onError() {
-                            Picasso.with(getContext().getApplicationContext())
-                                    .load(Uri.parse(photo.getUri()))
+                        public void onGlobalLayout() {
+                            mImageView.getViewTreeObserver()
+                                    .removeOnGlobalLayoutListener(this);
+                            new Picasso.Builder(getContext().getApplicationContext())
+                                    .build()
+                                    .load(photo.getUri())
+                                    .rotate(90)
+                                    .networkPolicy(NetworkPolicy.OFFLINE)
+                                    .resize(mImageView.getHeight(), mImageView.getWidth())
+                                    .centerCrop()
                                     .placeholder(R.drawable.ic_stat_ic_notification)
                                     .error(R.drawable.uploading)
                                     .into(mImageView, new Callback() {
                                         @Override
                                         public void onSuccess() {
-                                            mImageView.setOnClickListener(PhotoHolder.this);
                                         }
 
                                         @Override
                                         public void onError() {
-
+                                            Picasso.with(getContext().getApplicationContext())
+                                                    .load(photo.getUri())
+                                                    .rotate(90)
+                                                    .resize(mImageView.getWidth(),mImageView.getHeight())
+                                                    .centerCrop()
+                                                    .placeholder(R.drawable.ic_stat_ic_notification)
+                                                    .error(R.drawable.uploading)
+                                                    .into(mImageView);
                                         }
                                     });
                         }
                     });
-
+            mImageView.setOnClickListener(this);
         }
+
 
         @Override
         public void onClick(View view) {
-
+            Intent intent = PhotosPageViewActivity.newIntent(getContext(), mPhoto.getId(), mPhotos);
+            startActivity(intent);
         }
     }
 

@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="by.raf.akunamatata">
-
+    <uses-feature android:name="android.hardware.camera"
+                  android:required="false" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+                     android:maxSdkVersion="18" />
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
@@ -19,7 +22,9 @@
         android:theme="@style/AppTheme">
         <activity android:name=".activities.AkunaMatataActivity"/>
         <activity android:name=".activities.PhotosActivity"/>
-        <activity android:parentActivityName=".activities.AkunaMatataActivity"
+        <activity android:name=".activities.PhotosPageViewActivity"
+                  android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"/>
+        <activity android:configChanges="orientation" android:parentActivityName=".activities.AkunaMatataActivity"
                   android:name=".activities.EventActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

@@ -1,6 +1,8 @@
 package by.raf.akunamatata.model;
 
-public class Entity {
+import java.io.Serializable;
+
+public class Entity implements Serializable {
     private String mId;
 
     public String getId() {

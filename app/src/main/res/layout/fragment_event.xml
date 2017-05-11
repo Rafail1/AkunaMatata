@@ -10,9 +10,13 @@
 
         <ImageView
             android:id="@+id/detail_event_image"
+            android:layout_width="300dp"
+            android:layout_height="250dp"/>
+
+        <TextView
+            android:id="@+id/detail_event_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
-
         <TextView
             android:id="@+id/detail_event_author"
             android:layout_width="match_parent"
@@ -44,6 +48,12 @@
 
         <Button
             android:id="@+id/detail_event_request"
+            android:layout_width="match_parent"
+            android:text="@string/button_watch_photos"
+            android:layout_height="wrap_content"/>
+        <Button
+            android:id="@+id/detail_evrnt_add_photp"
+            android:text="@string/button_add_photo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
     </LinearLayout>

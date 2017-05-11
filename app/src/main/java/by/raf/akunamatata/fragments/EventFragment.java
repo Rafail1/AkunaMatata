@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -26,11 +27,15 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -57,6 +62,7 @@ public class EventFragment extends Fragment implements Observer {
     private TextView mAuthor;
     private TextView mTitle;
     private TextView mAddress;
+    private TextView mDate;
     private TextView mDetails;
     private IWill mIWill;
     private MyDecoView arcView;
@@ -64,7 +70,6 @@ public class EventFragment extends Fragment implements Observer {
     private Event mEvent;
     private int pos;
     private Button mAddPhoto;
-    private String currentImage;
     private long currentImageTime;
     private NotificationManager mNotifyManager;
     private NotificationCompat.Builder mBuilder;
@@ -124,7 +129,7 @@ public class EventFragment extends Fragment implements Observer {
             public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
                 @SuppressWarnings("VisibleForTests") long bytesTransferred = taskSnapshot.getBytesTransferred();
                 @SuppressWarnings("VisibleForTests") long bytesCount = taskSnapshot.getTotalByteCount();
-                double progress = (100.0 *  bytesTransferred ) / bytesCount;
+                double progress = (100.0 * bytesTransferred) / bytesCount;
 
                 mBuilder.setProgress(100, (int) progress, false);
                 mNotifyManager.notify(id, mBuilder.build());
@@ -211,6 +216,7 @@ public class EventFragment extends Fragment implements Observer {
 
         mPicture = (ImageView) v.findViewById(R.id.detail_event_image);
         mAuthor = (TextView) v.findViewById(R.id.detail_event_author);
+        mDate = (TextView) v.findViewById(R.id.detail_event_date);
         mTitle = (TextView) v.findViewById(R.id.detail_event_title);
         mAddress = (TextView) v.findViewById(R.id.detail_event_address);
         mDetails = (TextView) v.findViewById(R.id.detail_event_description);
@@ -223,12 +229,52 @@ public class EventFragment extends Fragment implements Observer {
                 dispatchTakePictureIntent();
             }
         });
-        Picasso.with(getContext()).load(mEvent.getPicture()).centerCrop().resize(100, 100).into(mPicture);
+
+        mPicture.getViewTreeObserver()
+                .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        // Ensure we call this only once
+                        mPicture.getViewTreeObserver()
+                                .removeOnGlobalLayoutListener(this);
+                        new Picasso.Builder(getContext().getApplicationContext())
+                                .build()
+                                .load(mEvent.getPicture())
+                                .networkPolicy(NetworkPolicy.OFFLINE)
+                                .resize(mPicture.getHeight(), mPicture.getWidth())
+                                .centerCrop()
+                                .placeholder(R.drawable.ic_stat_ic_notification)
+                                .error(R.drawable.uploading)
+                                .into(mPicture, new Callback() {
+                                    @Override
+                                    public void onSuccess() {
+                                    }
+
+                                    @Override
+                                    public void onError() {
+                                        Picasso.with(getContext().getApplicationContext())
+                                                .load(Uri.parse(mEvent.getPicture()))
+                                                .resize(mPicture.getHeight(), mPicture.getWidth())
+                                                .centerCrop()
+                                                .placeholder(R.drawable.ic_stat_ic_notification)
+                                                .error(R.drawable.uploading)
+                                                .into(mPicture);
+                                    }
+                                });
+                    }
+                });
+
+
         mAuthor.setText(mEvent.getAuthor());
         mTitle.setText(mEvent.getTitle());
         mAddress.setText(mEvent.getAddress());
         mDetails.setText(mEvent.getDescription());
         mIWill.setText(getString(R.string.button_will_be));
+
+        Locale ru = new Locale("ru", "RU", "RU");
+        DateFormat df = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, ru);
+        mDate.setText(df.format(mEvent.getDateStart()));
+
         mHowItIs.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -287,7 +333,42 @@ public class EventFragment extends Fragment implements Observer {
     private void reloadEvent(Event newEvent) {
 
         if (!newEvent.getPicture().equals(mEvent.getPicture())) {
-            Picasso.with(getContext()).load(mEvent.getPicture()).into(mPicture);
+            mPicture.getViewTreeObserver()
+                    .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                        @Override
+                        public void onGlobalLayout() {
+                            // Ensure we call this only once
+                            mPicture.getViewTreeObserver()
+                                    .removeOnGlobalLayoutListener(this);
+                            new Picasso.Builder(getContext().getApplicationContext())
+                                    .build()
+                                    .load(mEvent.getPicture())
+                                    .rotate(90)
+                                    .networkPolicy(NetworkPolicy.OFFLINE)
+                                    .resize(mPicture.getHeight(), mPicture.getWidth())
+                                    .centerCrop()
+                                    .placeholder(R.drawable.ic_stat_ic_notification)
+                                    .error(R.drawable.uploading)
+                                    .into(mPicture, new Callback() {
+                                        @Override
+                                        public void onSuccess() {
+                                        }
+
+                                        @Override
+                                        public void onError() {
+                                            Picasso.with(getContext().getApplicationContext())
+                                                    .load(Uri.parse(mEvent.getPicture()))
+                                                    .rotate(90)
+                                                    .resize(mPicture.getHeight(), mPicture.getWidth())
+                                                    .centerCrop()
+                                                    .placeholder(R.drawable.ic_stat_ic_notification)
+                                                    .error(R.drawable.uploading)
+                                                    .into(mPicture);
+                                        }
+                                    });
+                        }
+                    });
+
         }
         if (!newEvent.getAuthor().equals(mEvent.getAuthor())) {
             mAuthor.setText(newEvent.getAuthor());

@@ -1,7 +1,5 @@
 package by.raf.akunamatata.model;
 
-import android.net.Uri;
-
 public class Photo extends Entity {
     private String mId;
     private String mFromUser;

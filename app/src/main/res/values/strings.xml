@@ -68,4 +68,6 @@
     <string name="firebase_status_fmt">Firebase User: %s</string>
     <string name="button_request">Как вы там?</string>
     <string name="button_watch_photos">смотреть фото</string>
+    <string name="button_add_photo">добавить фото</string>
+    <string name="download_completed">Загрузка завершена</string>
 </resources>

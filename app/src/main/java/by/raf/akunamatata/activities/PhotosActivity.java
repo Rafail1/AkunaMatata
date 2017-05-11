@@ -19,6 +19,6 @@ public class PhotosActivity extends SingleFragmentActivity {
 
     @Override
     public Fragment createFragment() {
-        return PhotosFragment.newInstance(getIntent().getStringExtra(PARAM_EVENT_POS));
+        return PhotosFragment.newInstance(getIntent().getIntExtra(PARAM_EVENT_POS, 0));
     }
 }

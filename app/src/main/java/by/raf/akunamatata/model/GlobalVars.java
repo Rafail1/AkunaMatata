@@ -16,4 +16,5 @@ public class GlobalVars extends Application {
         built.setLoggingEnabled(true);
         Picasso.setSingletonInstance(built);
     }
+
 }

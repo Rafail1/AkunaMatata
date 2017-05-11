@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+<android.support.v7.widget.RecyclerView
+    android:id="@+id/events_photos_recycler_view"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:padding="6dp"
+    android:layout_width="match_parent"
+    android:scrollbars="vertical"
 
-</LinearLayout>
+    android:layout_height="match_parent"
+    tools:context="by.raf.akunamatata.activities.PhotosActivity">
+
+</android.support.v7.widget.RecyclerView>
