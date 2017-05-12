@@ -10,18 +10,12 @@ import android.support.v7.app.AppCompatActivity;
 import by.raf.akunamatata.R;
 
 
-public abstract class SingleFragmentActivity extends AppCompatActivity {
+public abstract class SingleFragmentActivity extends WithToolbarActivity {
     public abstract Fragment createFragment();
-
-    @LayoutRes
-    private int getLayoutResId() {
-        return R.layout.activity_fragment;
-    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(getLayoutResId());
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         Fragment fragment = fragmentManager.findFragmentById(R.id.fragmentContainer);

@@ -32,7 +32,7 @@ public class IWill extends android.support.v7.widget.AppCompatButton {
                     stringId = R.string.button_will_not_be;
                 }
                 setText(context.getString(stringId));
-                DataProvider.getInstance(context).updateEntity(currentEvent);
+                DataProvider.getInstance().updateEntity(currentEvent);
             }
         });
     }

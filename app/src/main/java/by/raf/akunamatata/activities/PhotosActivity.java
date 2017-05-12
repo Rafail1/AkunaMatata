@@ -2,9 +2,20 @@ package by.raf.akunamatata.activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.GravityCompat;
+import android.view.MenuItem;
 
+import com.google.firebase.auth.FirebaseAuth;
+
+import by.raf.akunamatata.R;
 import by.raf.akunamatata.fragments.PhotosFragment;
+import by.raf.akunamatata.model.managers.NetworkManager;
+import by.raf.akunamatata.model.managers.UserManager;
 
 
 public class PhotosActivity extends SingleFragmentActivity {
@@ -21,4 +32,6 @@ public class PhotosActivity extends SingleFragmentActivity {
     public Fragment createFragment() {
         return PhotosFragment.newInstance(getIntent().getIntExtra(PARAM_EVENT_POS, 0));
     }
+
+
 }

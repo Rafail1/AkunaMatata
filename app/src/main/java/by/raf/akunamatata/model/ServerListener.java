@@ -46,9 +46,9 @@ public abstract class ServerListener extends Observable {
         onRemoved(entity, map);
     }
 
-    <T extends Entity> void listen(DatabaseReference reference, final Class<T> EntityClass,
-                                   final HashMap<String, T> map) {
-        reference.addChildEventListener(new ChildEventListener() {
+    public <T extends Entity> ChildEventListener getListener(final Class<T> EntityClass,
+                                                             final HashMap<String, T> map) {
+        return new ChildEventListener() {
 
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -81,7 +81,7 @@ public abstract class ServerListener extends Observable {
             public void onCancelled(DatabaseError error) {
                 // Failed to read value
             }
-        });
+        };
     }
 
     @Override

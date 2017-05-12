@@ -105,7 +105,7 @@ public class UserIntentService extends IntentService {
             editor.putInt(User.PREF_FREE, User.FREE);
             editor.commit();
 
-            DataProvider.getInstance(this).updateCurrentUser(this);
+            DataProvider.getInstance().updateCurrentUser(this);
 
         }
     }

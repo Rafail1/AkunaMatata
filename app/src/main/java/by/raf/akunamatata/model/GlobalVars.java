@@ -17,4 +17,6 @@ public class GlobalVars extends Application {
         Picasso.setSingletonInstance(built);
     }
 
+
+
 }

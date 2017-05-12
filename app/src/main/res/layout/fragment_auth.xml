@@ -54,7 +54,6 @@
             android:layout_gravity="center"
             android:text="@string/start_akuna"
             android:textColor="@android:color/white"
-            android:theme="@style/ThemeOverlay.MyDarkButton"
             android:visibility="gone"
             tools:visibility="visible"/>
 
@@ -80,7 +79,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/continue_without_sign"
-            android:theme="@style/ThemeOverlay.MyDarkButton"
             android:visibility="invisible"/>
 
         <LinearLayout
@@ -100,7 +98,6 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/sign_out"
-                android:theme="@style/ThemeOverlay.MyDarkButton"
                 android:visibility="visible"/>
 
             <Button
@@ -109,7 +106,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/disconnect"
-                android:theme="@style/ThemeOverlay.MyDarkButton"/>
+                />
 
         </LinearLayout>
 

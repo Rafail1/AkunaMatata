@@ -47,22 +47,24 @@ public class PhotosPageViewActivity extends AppCompatActivity {
                             | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
     }
-private class PhotoAdapter extends FragmentPagerAdapter {
 
-    public PhotoAdapter(FragmentManager fm) {
-        super(fm);
+    private class PhotoAdapter extends FragmentPagerAdapter {
+
+        public PhotoAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return OnePhotoFragment.newInstance(mPhotos.get(position).getId());
+        }
+
+        @Override
+        public int getCount() {
+            return mPhotos.size();
+        }
     }
 
-    @Override
-    public Fragment getItem(int position) {
-        return OnePhotoFragment.newInstance(mPhotos.get(position).getId());
-    }
-
-    @Override
-    public int getCount() {
-        return mPhotos.size();
-    }
-}
     @Override
     @SuppressLint("NewApi")
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +93,7 @@ private class PhotoAdapter extends FragmentPagerAdapter {
         }
 
 
-        setContentView(R.layout.photos_activity);
+        setContentView(R.layout.view_pager);
         mPhotos = (ArrayList<Photo>) getIntent().getExtras().getSerializable(PHOTOS);
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         mAdapter = new PhotoAdapter(getSupportFragmentManager());

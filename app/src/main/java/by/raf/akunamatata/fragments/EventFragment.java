@@ -56,7 +56,6 @@ import static by.raf.akunamatata.model.Event.REMOVED;
 public class EventFragment extends Fragment implements Observer {
     public static final String ARG_EVENT_POSITION = "EVENT_POSITION";
     private static final int TAKE_PICTURE = 1;
-    private static final String TAG = "EVENT_FRAGMENT";
     private static final String PARAM_PHOTO_FILE = "file_url";
     private ImageView mPicture;
     private TextView mAuthor;
@@ -90,8 +89,7 @@ public class EventFragment extends Fragment implements Observer {
             imageUri = savedInstanceState.getParcelable(PARAM_PHOTO_FILE);
         }
         pos = getArguments().getInt(ARG_EVENT_POSITION, 0);
-        mEvent = DataProvider.getInstance(getContext()).mEventList.get(pos);
-        setHasOptionsMenu(true);
+        mEvent = DataProvider.getInstance().mEventList.get(pos);
     }
 
     @Override
@@ -103,7 +101,7 @@ public class EventFragment extends Fragment implements Observer {
     public void onStart() {
         super.onStart();
         NetworkManager.getInstance().addObserver(this);
-        DataProvider.getInstance(getContext()).addObserver(this);
+        DataProvider.getInstance().addObserver(this);
         NetworkManager.getInstance().registerReceiver(getContext());
     }
 
@@ -140,7 +138,7 @@ public class EventFragment extends Fragment implements Observer {
                 mBuilder.setContentText(getContext().getString(R.string.download_completed))
                         .setProgress(0, 0, false);
                 mNotifyManager.notify(id, mBuilder.build());
-                DatabaseReference myRefPhotos = DataProvider.getInstance(getContext()).getDatabase().getReference("akunamatata/photos");
+                DatabaseReference myRefPhotos = DataProvider.getInstance().getDatabase().getReference("akunamatata/photos");
                 String id = myRefPhotos.push().getKey();
                 photo.setId(id);
 
@@ -155,7 +153,7 @@ public class EventFragment extends Fragment implements Observer {
     @Override
     public void onStop() {
         NetworkManager.getInstance().deleteObserver(this);
-        DataProvider.getInstance(getContext()).deleteObserver(this);
+        DataProvider.getInstance().deleteObserver(this);
         NetworkManager.getInstance().unregisterReceiver(getContext());
         super.onStop();
     }
@@ -317,7 +315,7 @@ public class EventFragment extends Fragment implements Observer {
             if (args[0] == Event.OBSERVER_ID) {
                 switch (args[1]) {
                     case CHANGED:
-                        Event newEvent = DataProvider.getInstance(getContext()).mEventList.get(args[2]);
+                        Event newEvent = DataProvider.getInstance().mEventList.get(args[2]);
                         reloadEvent(newEvent);
                         break;
                     case REMOVED:

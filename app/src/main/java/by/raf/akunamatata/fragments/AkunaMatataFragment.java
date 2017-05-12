@@ -1,7 +1,6 @@
 package by.raf.akunamatata.fragments;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -9,16 +8,11 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SimpleItemAnimator;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -39,6 +33,7 @@ import by.raf.akunamatata.model.managers.UserManager;
 import by.raf.akunamatata.myviews.IWill;
 import by.raf.akunamatata.myviews.MyDecoView;
 
+import static by.raf.akunamatata.activities.AkunaMatataActivity.RELOADED;
 import static by.raf.akunamatata.model.Event.ADDED;
 import static by.raf.akunamatata.model.Event.CHANGED;
 import static by.raf.akunamatata.model.Event.REMOVED;
@@ -57,12 +52,6 @@ public class AkunaMatataFragment extends Fragment implements Observer {
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-    }
-
-    @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         mCallbacks = (Callbacks) context;
@@ -77,13 +66,15 @@ public class AkunaMatataFragment extends Fragment implements Observer {
     @Override
     public void onStart() {
         super.onStart();
+
         NetworkManager.getInstance().addObserver(this);
-        DataProvider.getInstance(getContext()).addObserver(this);
+        DataProvider.getInstance().addObserver(this);
         NetworkManager.getInstance().registerReceiver(getContext());
         if (mAdapter != null) {
             mAdapter.notifyDataSetChanged();
         } else {
-            mAdapter = new EventAdapter(getActivity(), mCallbacks, DataProvider.getInstance(getContext()).getEventList());
+            mAdapter = new EventAdapter(getActivity(), mCallbacks, DataProvider.getInstance()
+                    .getEventList());
             mRecyclerView.setAdapter(mAdapter);
         }
     }
@@ -91,7 +82,7 @@ public class AkunaMatataFragment extends Fragment implements Observer {
     @Override
     public void onStop() {
         NetworkManager.getInstance().deleteObserver(this);
-        DataProvider.getInstance(getContext()).deleteObserver(this);
+        DataProvider.getInstance().deleteObserver(this);
         NetworkManager.getInstance().unregisterReceiver(getContext());
         super.onStop();
     }
@@ -110,35 +101,6 @@ public class AkunaMatataFragment extends Fragment implements Observer {
         return v;
     }
 
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.menu, menu);
-        MenuItem exit = menu.findItem(R.id.menu_sign_out);
-        if (NetworkManager.getInstance().isNetworkConnected(getActivity())) {
-            if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-                exit.setTitle(R.string.menu_sign_in);
-            } else {
-                exit.setTitle(R.string.menu_sign_out);
-            }
-        } else {
-            exit.setTitle(R.string.menu_offline);
-        }
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_sign_out:
-                if (NetworkManager.getInstance().isNetworkConnected(getActivity())) {
-                    FirebaseAuth.getInstance().signOut();
-                    UserManager.getInstance().logout(getContext());
-                }
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
 
     @Override
     public void update(Observable observable, Object o) {
@@ -154,8 +116,11 @@ public class AkunaMatataFragment extends Fragment implements Observer {
                         break;
                     case ADDED:
                         mAdapter.notifyItemInserted(mAdapter.getItemCount());
+                        break;
+                    case RELOADED:
+                        mAdapter.notifyDataSetChanged();
+                        break;
                 }
-
             }
         } else if (observable instanceof NetworkManager) {
             getActivity().invalidateOptionsMenu();

@@ -2,6 +2,8 @@
     <string name="app_name">AkunaMatata</string>
     <string name="preference_file_key">by.raf.akunamatata</string>
     <string name="title_text">Авторизация Google</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
 
     <!-- Sign-in status messages -->
     <string name="signed_in_fmt">%s</string>
@@ -70,4 +72,8 @@
     <string name="button_watch_photos">смотреть фото</string>
     <string name="button_add_photo">добавить фото</string>
     <string name="download_completed">Загрузка завершена</string>
+    <string name="header">Header</string>
+    <string name="menu_header_title">Hakuna Matata</string>
+    <string name="menu_bottom_title">Нижнее меню</string>
+    <string name="menu_group_categories">Категории</string>
 </resources>

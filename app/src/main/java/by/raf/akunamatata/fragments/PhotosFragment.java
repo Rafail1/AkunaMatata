@@ -1,7 +1,6 @@
 package by.raf.akunamatata.fragments;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -17,8 +16,6 @@ import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -40,8 +37,6 @@ public class PhotosFragment extends Fragment {
     private ChildEventListener mPhotoListener;
     private ArrayList<Photo> mPhotos = new ArrayList<>();
     private DatabaseReference myRefPhotos;
-    private FirebaseStorage storage;
-    private StorageReference storageRef;
 
     public void unregisterPhotoListener() {
         myRefPhotos.removeEventListener(mPhotoListener);
@@ -49,7 +44,7 @@ public class PhotosFragment extends Fragment {
 
     public void registerPhotoListener() {
 
-        myRefPhotos = DataProvider.getInstance(getContext()).getDatabase().getReference("akunamatata/photos");
+        myRefPhotos = DataProvider.getInstance().getDatabase().getReference("akunamatata/photos");
         myRefPhotos.keepSynced(true);
         mPhotoListener = new ChildEventListener() {
             @Override
@@ -119,14 +114,12 @@ public class PhotosFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_event_photos, container, false);
         int eventPos = getArguments().getInt(ARG_EVENT_POS);
-        storage = FirebaseStorage.getInstance();
-        storageRef = storage.getReference();
-        mEvent = DataProvider.getInstance(getContext()).getEventList().get(eventPos);
+        mEvent = DataProvider.getInstance().getEventList().get(eventPos);
         mRecyclerView = (RecyclerView) v.findViewById(R.id.events_photos_recycler_view);
         mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
         mPhotoAdapter = new PhotoAdapter(mPhotos);
         mRecyclerView.setAdapter(mPhotoAdapter);
-        myRefPhotos = DataProvider.getInstance(getContext()).getDatabase().getReference("akunamatata/photos");
+        myRefPhotos = DataProvider.getInstance().getDatabase().getReference("akunamatata/photos");
 
         return v;
     }
