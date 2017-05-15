@@ -76,4 +76,6 @@
     <string name="menu_header_title">Hakuna Matata</string>
     <string name="menu_bottom_title">Нижнее меню</string>
     <string name="menu_group_categories">Категории</string>
+    <string name="action_search">Поиск</string>
+    <string name="search_title">Поиск</string>
 </resources>

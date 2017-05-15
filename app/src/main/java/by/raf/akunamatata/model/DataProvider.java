@@ -60,7 +60,7 @@ public class DataProvider extends ServerListener {
         sEvents = new HashMap<>();
         sUsers = new HashMap<>();
         mEventList = new ArrayList<>();
-        //  initData();
+        initData();
 
     }
 
@@ -119,7 +119,11 @@ public class DataProvider extends ServerListener {
     }
 
     private void sendCategories(ArrayList<Category> sCategories) {
-        myRefCategories.setValue(sCategories);
+        HashMap<String, Category> hm = new HashMap<>();
+        for (int i = 0; i < sCategories.size(); i++) {
+            hm.put(sCategories.get(i).getId(), sCategories.get(i));
+        }
+        myRefCategories.setValue(hm);
     }
 
     private void sendEvents(Map<String, Event> start) {

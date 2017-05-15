@@ -4,13 +4,19 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.SimpleItemAnimator;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.squareup.picasso.Callback;
@@ -42,6 +48,7 @@ public class AkunaMatataFragment extends Fragment implements Observer {
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private Callbacks mCallbacks;
+    private String searchText;
 
     public static AkunaMatataFragment newInstance() {
         return new AkunaMatataFragment();
@@ -85,6 +92,12 @@ public class AkunaMatataFragment extends Fragment implements Observer {
         DataProvider.getInstance().deleteObserver(this);
         NetworkManager.getInstance().unregisterReceiver(getContext());
         super.onStop();
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Nullable
@@ -229,6 +242,20 @@ public class AkunaMatataFragment extends Fragment implements Observer {
         private IWill mAction;
         private Event mEvent;
 
+        public void setVisibility(boolean isVisible){
+            RecyclerView.LayoutParams param = (RecyclerView.LayoutParams)itemView.getLayoutParams();
+            if (isVisible){
+                param.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+                param.width = LinearLayout.LayoutParams.MATCH_PARENT;
+                itemView.setVisibility(View.VISIBLE);
+            }else{
+                itemView.setVisibility(View.GONE);
+                param.height = 0;
+                param.width = 0;
+            }
+            itemView.setLayoutParams(param);
+        }
+
         EventHolder(View v) {
             super(v);
             v.setOnClickListener(this);
@@ -249,6 +276,59 @@ public class AkunaMatataFragment extends Fragment implements Observer {
 
         public void bindEvent(Event currentEvent) {
             mEvent = currentEvent;
+            if(searchText != null) {
+                if (!mEvent.getTitle().toLowerCase().contains(searchText.toLowerCase())) {
+                    setVisibility(false);
+                } else {
+                    setVisibility(true);
+                }
+            }
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.top_menu, menu);
+
+        MenuItem myActionMenuItem = menu.findItem(R.id.search);
+        final SearchView searchView = (SearchView) myActionMenuItem.getActionView();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                filterEvents(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                filterEvents(newText);
+                return true;
+            }
+        });
+        MenuItemCompat.setOnActionExpandListener(myActionMenuItem, new MenuItemCompat.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                clearFilterEvents();
+                return true;
+            }
+        });
+
+
+    }
+
+    private void clearFilterEvents() {
+        searchText = null;
+
+    }
+
+    private void filterEvents(String newText) {
+        searchText = newText;
+        mAdapter.notifyDataSetChanged();
     }
 }

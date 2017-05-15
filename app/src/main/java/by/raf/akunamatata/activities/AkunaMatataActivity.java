@@ -75,7 +75,7 @@ public class AkunaMatataActivity extends SingleFragmentActivity implements Akuna
                 provider.mEventList.clear();
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
                     Event event = child.getValue(Event.class);
-                    if(currentCategory == null || !event.getCategoryIds().containsKey(currentCategory)) {
+                    if(currentCategory != null && !event.getCategoryIds().containsKey(currentCategory)) {
                         continue;
                     }
                     provider.mEventList.add(event);
