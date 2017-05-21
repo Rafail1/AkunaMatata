@@ -1,8 +1,6 @@
 package by.raf.akunamatata.activities;
 
 
-import android.app.SearchManager;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -14,14 +12,12 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 
+import com.facebook.login.LoginManager;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
@@ -36,7 +32,7 @@ import by.raf.akunamatata.model.managers.UserManager;
 
 public class WithToolbarActivity extends AppCompatActivity implements Observer, NavigationView.OnNavigationItemSelectedListener {
     public static final String MENU_CURRENT = "MENU_CURRENT";
-    private static final String MENU_CURRENT_NAME = "MENU_CURRENT_NAME";
+    protected static final String MENU_CURRENT_NAME = "MENU_CURRENT_NAME";
     protected DrawerLayout mDrawerLayout;
     protected NavigationView mNavigationView;
     protected ArrayList<Category> mCategories;
@@ -44,8 +40,6 @@ public class WithToolbarActivity extends AppCompatActivity implements Observer, 
     private MenuItem mPreviousMenuItem;
     protected SharedPreferences sp;
     private DataProvider mDataProvider;
-    private SearchView searchView = null;
-    private SearchView.OnQueryTextListener queryTextListener;
     @LayoutRes
     protected int getResId() {
         return R.layout.activity_fragment;
@@ -77,13 +71,12 @@ public class WithToolbarActivity extends AppCompatActivity implements Observer, 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, mDrawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close);
-        mDrawerLayout.setDrawerListener(toggle);
+        mDrawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
         mNavigationView = (NavigationView) findViewById(R.id.nav_view);
         mNavigationView.setNavigationItemSelectedListener(this);
         mCategoriesSubMenu = mNavigationView.getMenu().addSubMenu(0, 0, 0, R.string.menu_group_categories);
-        onCategoryChange();
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -95,11 +88,15 @@ public class WithToolbarActivity extends AppCompatActivity implements Observer, 
             if (NetworkManager.getInstance().isNetworkConnected(this)) {
                 FirebaseAuth.getInstance().signOut();
                 UserManager.getInstance().logout(this);
+                LoginManager.getInstance().logOut();
             }
             return false;
+        } else if(id == R.id.menu_sign_in) {
+            Intent intent = GoogleSignInActivity.newIntent(this);
+            startActivity(intent);
         } else {
-            if (mPreviousMenuItem != null && mPreviousMenuItem.equals(item)) {
-                return true;
+            if (preventSameMenuClick() && mPreviousMenuItem != null && mPreviousMenuItem.equals(item)) {
+                    return true;
             }
             item.setCheckable(true);
             item.setChecked(true);
@@ -122,6 +119,10 @@ public class WithToolbarActivity extends AppCompatActivity implements Observer, 
         return true;
     }
 
+    protected boolean preventSameMenuClick() {
+        return false;
+    }
+
     private void onCategoryChange() {
         DataProvider.currentCategory = sp.getString(MENU_CURRENT, null);
         ActionBar abar = getSupportActionBar();
@@ -131,7 +132,7 @@ public class WithToolbarActivity extends AppCompatActivity implements Observer, 
     }
 
     protected void loadEvents() {
-        DataProvider.getInstance().mEventList.clear();
+
         Intent intent = AkunaMatataActivity.newIntent(this);
         startActivity(intent);
         finish();

@@ -3,30 +3,22 @@ package by.raf.akunamatata.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
-import android.view.MenuItem;
+import android.support.v7.app.ActionBar;
 
-import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 
-import by.raf.akunamatata.R;
-import by.raf.akunamatata.fragments.AkunaMatataFragment;
-import by.raf.akunamatata.fragments.EventFragment;
 import by.raf.akunamatata.fragments.ViewPagerFragment;
 import by.raf.akunamatata.model.DataProvider;
-import by.raf.akunamatata.model.managers.NetworkManager;
-import by.raf.akunamatata.model.managers.UserManager;
+import by.raf.akunamatata.model.Event;
 
-public class EventActivity extends SingleFragmentActivity {
+public class EventActivity extends SingleFragmentActivity implements ViewPagerFragment.Callbacks {
 
     public static final String POSITION = "POSITION";
+    private ChildEventListener listener;
+    private Event mEvent;
+
     public static Intent newIntent(Context packageContext, int position) {
         Intent intent = new Intent(packageContext, EventActivity.class);
         intent.putExtra(POSITION, position);
@@ -34,9 +26,40 @@ public class EventActivity extends SingleFragmentActivity {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        int pos = getIntent().getIntExtra(POSITION, 0);
+        mEvent = DataProvider.getInstance().getEventList().get(pos);
+        ActionBar actionBar = getSupportActionBar();
+        if(actionBar != null) {
+            actionBar.setTitle(mEvent.getTitle());
+        }
+    }
+
+    @Override
     public Fragment createFragment() {
         return ViewPagerFragment.newInstance(getIntent().getExtras().getInt(POSITION, 0));
     }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        DataProvider provider = DataProvider.getInstance();
+        listener = provider.getListener(Event.class, provider.sEvents);
+        provider.myRefEvents.orderByKey().equalTo(mEvent.getId()).addChildEventListener(listener);
+    }
+    @Override
+    protected void onStop() {
+        DataProvider provider = DataProvider.getInstance();
+        provider.myRefEvents.removeEventListener(listener);
+        super.onStop();
+    }
 
-
+    @Override
+    public void onPageSelected(int pos) {
+        mEvent = DataProvider.getInstance().getEventList().get(pos);
+        ActionBar actionBar = getSupportActionBar();
+        if(actionBar != null) {
+            actionBar.setTitle(mEvent.getTitle());
+        }
+    }
 }

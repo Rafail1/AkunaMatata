@@ -8,6 +8,7 @@ android {
         minSdkVersion 16
         targetSdkVersion 25
         versionCode 1
+        multiDexEnabled = true
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -19,6 +20,13 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
     }
 }
 
@@ -32,24 +40,28 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+
+    compile 'com.facebook.android:facebook-android-sdk:4.1.0'
+    compile 'com.firebase:firebase-client-android:2.0.3'
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    compile 'com.google.firebase:firebase-database:10.2.4'
-    compile 'com.google.android.gms:play-services-auth:10.2.4'
-    compile 'com.google.firebase:firebase-auth:10.2.4'
+    compile 'com.google.firebase:firebase-database:10.2.6'
+    compile 'com.google.android.gms:play-services-auth:10.2.6'
+    compile 'com.google.firebase:firebase-auth:10.2.6'
     compile 'com.firebase:firebase-jobdispatcher:0.6.0'
-    compile 'com.squareup.okhttp:okhttp:2.4.0'
-    compile 'com.google.firebase:firebase-storage:10.2.4'
+    compile 'com.google.firebase:firebase-storage:10.2.6'
     compile 'com.google.api-client:google-api-client:1.22.0'
     compile 'com.google.api-client:google-api-client-android:1.22.0'
     compile 'com.google.apis:google-api-services-people:v1-rev4-1.22.0'
     compile 'com.android.support:cardview-v7:25.3.1'
     compile 'com.android.support:recyclerview-v7:25.3.1'
     compile 'com.github.bmarrdev:android-DecoView-charting:v1.2'
-    compile 'com.squareup.picasso:picasso:2.5.2'
-    compile group: 'com.google.code.gson', name: 'gson', version: '2.7'
     compile 'com.google.apis:google-api-services-plus:v1-rev519-1.22.0'
     compile 'com.android.support:design:25.3.1'
+
+    compile 'com.github.bumptech.glide:glide:4.0.0-RC0'
+    compile 'com.android.support:support-v4:25.3.1'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.0.0-RC0'
 
     testCompile 'junit:junit:4.12'
 }

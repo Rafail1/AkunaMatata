@@ -15,29 +15,25 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
-
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Observable;
 import java.util.Observer;
 
 import by.raf.akunamatata.R;
+import by.raf.akunamatata.activities.AkunaMatataActivity;
 import by.raf.akunamatata.model.DataProvider;
 import by.raf.akunamatata.model.Event;
+import by.raf.akunamatata.model.GlobalVars;
 import by.raf.akunamatata.model.ServerListener;
 import by.raf.akunamatata.model.managers.NetworkManager;
 import by.raf.akunamatata.model.managers.UserManager;
 import by.raf.akunamatata.myviews.IWill;
-import by.raf.akunamatata.myviews.MyDecoView;
 
 import static by.raf.akunamatata.activities.AkunaMatataActivity.RELOADED;
 import static by.raf.akunamatata.model.Event.ADDED;
@@ -80,7 +76,7 @@ public class AkunaMatataFragment extends Fragment implements Observer {
         if (mAdapter != null) {
             mAdapter.notifyDataSetChanged();
         } else {
-            mAdapter = new EventAdapter(getActivity(), mCallbacks, DataProvider.getInstance()
+            mAdapter = new EventAdapter(mCallbacks, DataProvider.getInstance()
                     .getEventList());
             mRecyclerView.setAdapter(mAdapter);
         }
@@ -98,6 +94,7 @@ public class AkunaMatataFragment extends Fragment implements Observer {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
     }
 
     @Nullable
@@ -108,6 +105,7 @@ public class AkunaMatataFragment extends Fragment implements Observer {
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         RecyclerView.ItemAnimator animator = mRecyclerView.getItemAnimator();
+        ((AkunaMatataActivity)getActivity()).loadEvents();
         if (animator instanceof SimpleItemAnimator) {
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
         }
@@ -146,11 +144,9 @@ public class AkunaMatataFragment extends Fragment implements Observer {
 
     private class EventAdapter extends RecyclerView.Adapter<EventHolder> {
         private List<Event> mDataset;
-        private Context mContext;
         private Event mEvent;
 
-        EventAdapter(Context context, AkunaMatataFragment.Callbacks callbacks, ArrayList<Event> myDataset) {
-            mContext = context;
+        EventAdapter(AkunaMatataFragment.Callbacks callbacks, ArrayList<Event> myDataset) {
             mDataset = myDataset;
             mCallbacks = callbacks;
         }
@@ -161,69 +157,12 @@ public class AkunaMatataFragment extends Fragment implements Observer {
             return new EventHolder(v);
         }
 
-        private void reloadEventPhoto(final Event newEvent, final EventHolder holder) {
-            if (holder.mPicture.getDrawable() == null || !newEvent.getPicture().equals(mEvent.getPicture())) {
-                new Picasso.Builder(mContext)
-                        .build()
-                        .load(newEvent.getPicture())
-                        .networkPolicy(NetworkPolicy.OFFLINE)
-                        .centerCrop()
-                        .resize(100, 100)
-                        .error(R.drawable.uploading)
-                        .into(holder.mPicture, new Callback() {
-                            @Override
-                            public void onSuccess() {
-                            }
 
-                            @Override
-                            public void onError() {
-                                Picasso.with(mContext)
-                                        .load(newEvent.getPicture())
-                                        .centerCrop()
-                                        .resize(100, 100)
-                                        .placeholder(R.drawable.ic_stat_ic_notification)
-                                        .error(R.drawable.uploading)
-                                        .into(holder.mPicture);
-                            }
-                        });
-
-            }
-            mEvent = newEvent;
-        }
 
         @Override
         public void onBindViewHolder(final EventHolder holder, int position) {
-            reloadEventPhoto(mDataset.get(position), holder);
             mEvent = mDataset.get(position);
             holder.bindEvent(mEvent);
-            holder.mTitle.setText(mEvent.getTitle());
-            holder.mAuthor.setText(mEvent.getAuthor());
-            holder.mDetails.setText(mEvent.getDescription());
-            MyDecoView decoView = holder.arcView;
-            float stats[] = mEvent.mygetStat();
-
-            if (decoView.isEmpty()) {
-                decoView.setupMiniEvents(stats);
-            } else {
-                decoView.renew(stats);
-
-            }
-            Locale ru = new Locale("ru", "RU", "RU");
-            DateFormat df = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT, ru);
-            holder.mDate.setText(df.format(mEvent.getDateStart()));
-            final String myId = UserManager.getInstance().getUID();
-            if (myId == null) {
-                holder.mAction.setVisibility(View.INVISIBLE);
-            } else {
-                holder.mAction.setVisibility(View.VISIBLE);
-                if (mEvent.getUsers().containsKey(myId)) {
-                    holder.mAction.setText(mContext.getString(R.string.button_will_not_be));
-                } else {
-                    holder.mAction.setText(mContext.getString(R.string.button_will_be));
-                }
-                holder.mAction.setClickListener(mEvent, myId, mContext);
-            }
-
         }
 
         @Override
@@ -237,8 +176,8 @@ public class AkunaMatataFragment extends Fragment implements Observer {
         private TextView mAuthor;
         private TextView mTitle;
         private TextView mDetails;
-        private MyDecoView arcView;
         private TextView mDate;
+        private TextView mCount;
         private IWill mAction;
         private Event mEvent;
 
@@ -247,9 +186,11 @@ public class AkunaMatataFragment extends Fragment implements Observer {
             if (isVisible){
                 param.height = LinearLayout.LayoutParams.WRAP_CONTENT;
                 param.width = LinearLayout.LayoutParams.MATCH_PARENT;
+
                 itemView.setVisibility(View.VISIBLE);
             }else{
                 itemView.setVisibility(View.GONE);
+
                 param.height = 0;
                 param.width = 0;
             }
@@ -258,12 +199,12 @@ public class AkunaMatataFragment extends Fragment implements Observer {
 
         EventHolder(View v) {
             super(v);
-            v.setOnClickListener(this);
+            v.findViewById(R.id.cardView).setOnClickListener(this);
             mDetails = (TextView) v.findViewById(R.id.event_detail_text);
             mPicture = (ImageView) v.findViewById(R.id.event_image);
             mAuthor = (TextView) v.findViewById(R.id.event_author);
             mTitle = (TextView) v.findViewById(R.id.event_title);
-            arcView = (MyDecoView) v.findViewById(R.id.circle_view);
+            mCount = (TextView) v.findViewById(R.id.text_count);
             mDate = (TextView) v.findViewById(R.id.event_date);
             mAction = (IWill) v.findViewById(R.id.button_will_be);
 
@@ -271,16 +212,45 @@ public class AkunaMatataFragment extends Fragment implements Observer {
 
         @Override
         public void onClick(View view) {
+
             mCallbacks.onEventSelected(getAdapterPosition());
         }
 
-        public void bindEvent(Event currentEvent) {
-            mEvent = currentEvent;
+        private void reloadEventPhoto(final Event newEvent) {
+            if (mPicture.getDrawable() == null || !mEvent.getPicture().equals(newEvent.getPicture())) {
+                ((GlobalVars)getContext().getApplicationContext()).
+                        loadImage(mPicture, newEvent.getPicture());
+            }
+            mEvent = newEvent;
+        }
+        void bindEvent(Event currentEvent) {
+            reloadEventPhoto(currentEvent);
+
+            mTitle.setText(mEvent.getTitle());
+            mAuthor.setText(mEvent.getAuthor());
+            mDetails.setText(mEvent.getDescription());
+            mCount.setText(getString(R.string.text_will_be, String.valueOf(mEvent.getCount())));
+
+
+            mDate.setText(android.text.format.DateFormat.format("dd MMM HH:mm",mEvent.getDateStart()));
+            final String myId = UserManager.getInstance().getUID();
+            if (myId == null) {
+                mAction.setVisibility(View.INVISIBLE);
+            } else {
+                mAction.setVisibility(View.VISIBLE);
+                if (mEvent.getUsers().containsKey(myId)) {
+                    mAction.setText(getContext().getString(R.string.button_will_not_be));
+                } else {
+                    mAction.setText(getContext().getString(R.string.button_will_be));
+                }
+                mAction.setClickListener(mEvent, myId, getContext());
+            }
             if(searchText != null) {
                 if (!mEvent.getTitle().toLowerCase().contains(searchText.toLowerCase())) {
                     setVisibility(false);
                 } else {
                     setVisibility(true);
+
                 }
             }
         }

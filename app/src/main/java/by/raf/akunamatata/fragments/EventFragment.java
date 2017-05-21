@@ -1,17 +1,27 @@
 package by.raf.akunamatata.fragments;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Parcelable;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.NotificationCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,16 +30,15 @@ import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,6 +52,7 @@ import by.raf.akunamatata.R;
 import by.raf.akunamatata.activities.PhotosActivity;
 import by.raf.akunamatata.model.DataProvider;
 import by.raf.akunamatata.model.Event;
+import by.raf.akunamatata.model.GlobalVars;
 import by.raf.akunamatata.model.Photo;
 import by.raf.akunamatata.model.ServerListener;
 import by.raf.akunamatata.model.managers.NetworkManager;
@@ -57,6 +67,9 @@ public class EventFragment extends Fragment implements Observer {
     public static final String ARG_EVENT_POSITION = "EVENT_POSITION";
     private static final int TAKE_PICTURE = 1;
     private static final String PARAM_PHOTO_FILE = "file_url";
+    private static final int SELECT_PIC = 2;
+    private static final int PROFILE_PIC_COUNT = 0;
+    private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 3;
     private ImageView mPicture;
     private TextView mAuthor;
     private TextView mTitle;
@@ -73,6 +86,11 @@ public class EventFragment extends Fragment implements Observer {
     private NotificationManager mNotifyManager;
     private NotificationCompat.Builder mBuilder;
     private Uri imageUri;
+    private static final int SELECT_FILE = 2;
+    private String mUploading;
+    private String mUploadingInProgress;
+    private String mUploadingError;
+    private String mUploadingInSuccess;
 
     public static EventFragment newInstance(int position) {
         Bundle args = new Bundle();
@@ -95,6 +113,7 @@ public class EventFragment extends Fragment implements Observer {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+
     }
 
     @Override
@@ -105,22 +124,53 @@ public class EventFragment extends Fragment implements Observer {
         NetworkManager.getInstance().registerReceiver(getContext());
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mPicture != null) {
+            mPicture.setImageDrawable(null);
+        }
+    }
+
+    private int orientationPhoto(String photoPath, Bitmap bitmap) throws IOException {
+        ExifInterface ei = new ExifInterface(photoPath);
+        return ei.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_UNDEFINED);
+    }
+
     public void uploadPhoto(Uri uri) {
+        Bitmap bitmap = BitmapFactory.decodeFile(uri.getPath());
+        int orientation = 1;
+        try {
+            orientation = orientationPhoto(uri.getPath(), bitmap);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(getContext(), getString(R.string.error_camera), Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (!NetworkManager.getInstance().isNetworkConnected(getContext())) {
+            Toast.makeText(getContext(), getString(R.string.no_internet), Toast.LENGTH_LONG).show();
+            return;
+        }
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference();
         final Photo photo = new Photo();
         photo.setPath("images/" + mEvent.getId() + "/" + uri.getLastPathSegment());
         photo.setDateCreate(currentImageTime);
         photo.setEventId(mEvent.getId());
+        photo.setOrientation(orientation);
         photo.setFromUser(UserManager.getInstance().getUID());
         StorageReference riversRef = storageRef.child("images/" + mEvent.getId() + "/" + uri.getLastPathSegment());
         final UploadTask task = riversRef.putFile(uri);
+
+
         final int id = 1;
         mNotifyManager =
                 (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
         mBuilder = new NotificationCompat.Builder(getContext());
-        mBuilder.setContentTitle("Picture Upload")
-                .setContentText("Upload in progress")
+        mBuilder.setContentTitle(mUploading)
+                .setContentText(mUploadingInProgress)
+                .setAutoCancel(true)
                 .setSmallIcon(R.drawable.uploading);
         task.addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
             @Override
@@ -135,7 +185,7 @@ public class EventFragment extends Fragment implements Observer {
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                mBuilder.setContentText(getContext().getString(R.string.download_completed))
+                mBuilder.setContentText(mUploadingInSuccess)
                         .setProgress(0, 0, false);
                 mNotifyManager.notify(id, mBuilder.build());
                 DatabaseReference myRefPhotos = DataProvider.getInstance().getDatabase().getReference("akunamatata/photos");
@@ -147,7 +197,19 @@ public class EventFragment extends Fragment implements Observer {
                 myRefPhotos.child(id).setValue(photo);
                 Log.d("d ", d.toString());
             }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                mBuilder.setContentText(mUploadingError)
+                        .setProgress(0, 0, false);
+                mNotifyManager.notify(id, mBuilder.build());
+            }
         });
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
     }
 
     @Override
@@ -158,23 +220,72 @@ public class EventFragment extends Fragment implements Observer {
         super.onStop();
     }
 
+    private static void requestPermission(final Context context) {
+        if (ActivityCompat.shouldShowRequestPermissionRationale((Activity) context, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            new AlertDialog.Builder(context)
+                    .setMessage(context.getResources().getString(R.string.permission_storage))
+                    .setPositiveButton(R.string.tamam, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            ActivityCompat.requestPermissions((Activity) context,
+                                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                    REQUEST_WRITE_EXTERNAL_STORAGE);
+                        }
+                    }).show();
+
+        } else {
+            ActivityCompat.requestPermissions((Activity) context,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_WRITE_EXTERNAL_STORAGE);
+        }
+    }
+
     private File createImageFile() throws IOException {
+        if (PackageManager.PERMISSION_GRANTED != ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            requestPermission(getContext());
+            return null;
+        }
         long timeStamp = new Date().getTime();
         String myId = UserManager.getInstance().getUID();
         String imageFileName = "JPEG_" + timeStamp + "_" + myId;
-        File storageDir = getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,
-                ".jpg",
-                storageDir
-        );
+        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        if (!storageDir.exists()) {
+            if (!storageDir.mkdirs()) {
+                return null;
+            }
+        }
+        File image = new File(storageDir + "/" + imageFileName + ".jpg");
 
         currentImageTime = timeStamp;
         return image;
     }
 
+    private void getDialog() {
+
+        final CharSequence[] items = {"Take Photo", "Choose from Library", "Cancel"};
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getActivity());
+        builder.setTitle("Add Photo!");
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int item) {
+
+                if (items[item].equals("Take Photo")) {
+                    dispatchTakePictureIntent();
+                } else if (items[item].equals("Choose from Library")) {
+                    Intent intent = new Intent(
+                            Intent.ACTION_PICK,
+                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    startActivityForResult(intent, SELECT_FILE);
+                } else if (items[item].equals("Cancel")) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        builder.show();
+    }
 
     private void dispatchTakePictureIntent() {
+
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         File photo = null;
         try {
@@ -182,11 +293,12 @@ public class EventFragment extends Fragment implements Observer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        intent.putExtra(MediaStore.EXTRA_OUTPUT,
-                Uri.fromFile(photo));
-        imageUri = Uri.fromFile(photo);
-        startActivityForResult(intent, TAKE_PICTURE);
-
+        if (photo != null) {
+            intent.putExtra(MediaStore.EXTRA_OUTPUT,
+                    Uri.fromFile(photo));
+            imageUri = Uri.fromFile(photo);
+            startActivityForResult(intent, TAKE_PICTURE);
+        }
     }
 
     @Override
@@ -196,6 +308,22 @@ public class EventFragment extends Fragment implements Observer {
 
     }
 
+    public String getPath(Uri uri) {
+
+        String[] projection = {MediaStore.Images.Media.DATA};
+        Cursor cursor = getContext().getContentResolver().query(uri, projection, null, null, null);
+        if (cursor != null) {
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return "file://" + cursor.getString(column_index);
+
+        }
+        return null;
+
+    }
+
+
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -204,8 +332,20 @@ public class EventFragment extends Fragment implements Observer {
                 if (resultCode == Activity.RESULT_OK && imageUri != null) {
                     uploadPhoto(imageUri);
                 }
+                break;
+            case SELECT_FILE:
+                if (resultCode == Activity.RESULT_OK) {
+                    Uri uri = data.getData();
+                    uploadPhoto(Uri.parse(getPath(uri)));
+                }
         }
     }
+
+
+    private void fillImageView(final String url) {
+        ((GlobalVars) getContext().getApplicationContext()).loadImage(mPicture, url);
+    }
+
 
     @Nullable
     @Override
@@ -224,43 +364,13 @@ public class EventFragment extends Fragment implements Observer {
         mAddPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dispatchTakePictureIntent();
+                getDialog();
             }
         });
-
-        mPicture.getViewTreeObserver()
-                .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                    @Override
-                    public void onGlobalLayout() {
-                        // Ensure we call this only once
-                        mPicture.getViewTreeObserver()
-                                .removeOnGlobalLayoutListener(this);
-                        new Picasso.Builder(getContext().getApplicationContext())
-                                .build()
-                                .load(mEvent.getPicture())
-                                .networkPolicy(NetworkPolicy.OFFLINE)
-                                .resize(mPicture.getHeight(), mPicture.getWidth())
-                                .centerCrop()
-                                .placeholder(R.drawable.ic_stat_ic_notification)
-                                .error(R.drawable.uploading)
-                                .into(mPicture, new Callback() {
-                                    @Override
-                                    public void onSuccess() {
-                                    }
-
-                                    @Override
-                                    public void onError() {
-                                        Picasso.with(getContext().getApplicationContext())
-                                                .load(Uri.parse(mEvent.getPicture()))
-                                                .resize(mPicture.getHeight(), mPicture.getWidth())
-                                                .centerCrop()
-                                                .placeholder(R.drawable.ic_stat_ic_notification)
-                                                .error(R.drawable.uploading)
-                                                .into(mPicture);
-                                    }
-                                });
-                    }
-                });
+        mUploading = getContext().getString(R.string.uploading);
+        mUploadingInProgress = getContext().getString(R.string.progress_uploading);
+        mUploadingError = getContext().getString(R.string.error_uploading);
+        mUploadingInSuccess = getContext().getString(R.string.success_uploading);
 
 
         mAuthor.setText(mEvent.getAuthor());
@@ -303,6 +413,7 @@ public class EventFragment extends Fragment implements Observer {
         arcView.disableHardwareAccelerationForDecoView();
         float[] stats = mEvent.mygetStat();
         arcView.start(stats);
+        fillImageView(mEvent.getPicture());
     }
 
     @Override
@@ -331,42 +442,7 @@ public class EventFragment extends Fragment implements Observer {
     private void reloadEvent(Event newEvent) {
 
         if (!newEvent.getPicture().equals(mEvent.getPicture())) {
-            mPicture.getViewTreeObserver()
-                    .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                        @Override
-                        public void onGlobalLayout() {
-                            // Ensure we call this only once
-                            mPicture.getViewTreeObserver()
-                                    .removeOnGlobalLayoutListener(this);
-                            new Picasso.Builder(getContext().getApplicationContext())
-                                    .build()
-                                    .load(mEvent.getPicture())
-                                    .rotate(90)
-                                    .networkPolicy(NetworkPolicy.OFFLINE)
-                                    .resize(mPicture.getHeight(), mPicture.getWidth())
-                                    .centerCrop()
-                                    .placeholder(R.drawable.ic_stat_ic_notification)
-                                    .error(R.drawable.uploading)
-                                    .into(mPicture, new Callback() {
-                                        @Override
-                                        public void onSuccess() {
-                                        }
-
-                                        @Override
-                                        public void onError() {
-                                            Picasso.with(getContext().getApplicationContext())
-                                                    .load(Uri.parse(mEvent.getPicture()))
-                                                    .rotate(90)
-                                                    .resize(mPicture.getHeight(), mPicture.getWidth())
-                                                    .centerCrop()
-                                                    .placeholder(R.drawable.ic_stat_ic_notification)
-                                                    .error(R.drawable.uploading)
-                                                    .into(mPicture);
-                                        }
-                                    });
-                        }
-                    });
-
+            fillImageView(newEvent.getPicture());
         }
         if (!newEvent.getAuthor().equals(mEvent.getAuthor())) {
             mAuthor.setText(newEvent.getAuthor());

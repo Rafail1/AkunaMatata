@@ -60,7 +60,7 @@ public class DataProvider extends ServerListener {
         sEvents = new HashMap<>();
         sUsers = new HashMap<>();
         mEventList = new ArrayList<>();
-        initData();
+//        initData();
 
     }
 
@@ -147,7 +147,7 @@ public class DataProvider extends ServerListener {
     protected <T extends Entity> void onAdded(Entity entity, HashMap<String, T> map) {
         if (entity instanceof Event) {
             Event newEvent = (Event) entity;
-            if(currentCategory == null || !newEvent.getCategoryIds().containsKey(currentCategory)) {
+            if(currentCategory != null && !newEvent.getCategoryIds().containsKey(currentCategory)) {
                 return;
             }
 
@@ -165,7 +165,7 @@ public class DataProvider extends ServerListener {
     protected <T extends Entity> void onRemoved(Entity entity, HashMap<String, T> map) {
         if (entity instanceof Event) {
             Event newEvent = (Event) entity;
-            if(currentCategory == null || !newEvent.getCategoryIds().containsKey(currentCategory)) {
+            if(currentCategory != null && !newEvent.getCategoryIds().containsKey(currentCategory)) {
                 return;
             }
             for (int i = 0; i < mEventList.size(); i++) {
@@ -182,7 +182,7 @@ public class DataProvider extends ServerListener {
     protected <T extends Entity> void onChanged(Entity entity, HashMap<String, T> map) {
         if (entity instanceof Event) {
             Event newEvent = (Event) entity;
-            if(currentCategory == null || !newEvent.getCategoryIds().containsKey(currentCategory)) {
+            if(currentCategory != null && !newEvent.getCategoryIds().containsKey(currentCategory)) {
                 return;
             }
             for (int i = 0; i < mEventList.size(); i++) {

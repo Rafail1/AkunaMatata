@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="firebase_url">https://akunamatata-56d22.firebaseio.com</string>
+    <string name="facebook_app_id">163460080854813</string>
+
+</resources>

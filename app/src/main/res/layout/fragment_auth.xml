@@ -4,111 +4,63 @@
               android:id="@+id/main_layout"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:background="@color/blue_grey_700"
               android:orientation="vertical"
               android:weightSum="4"
+              android:background="#eee"
               tools:context=".activities.GoogleSignInActivity">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="3"
         android:gravity="center_horizontal"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:clipToPadding="false"
 
-
-        <TextView
-            android:id="@+id/title_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:gravity="center"
-            android:text="@string/title_text"
-            android:textColor="@android:color/white"
-            android:textSize="36sp"/>
-
-        <TextView
-            android:id="@+id/status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/signed_out"
-            android:textColor="@android:color/white"
-            android:textSize="14sp"/>
-
-        <TextView
-            android:id="@+id/detail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fadeScrollbars="true"
-            android:gravity="center"
-            android:maxLines="5"
-            android:padding="10dp"
-            android:scrollbars="vertical"
-            android:textColor="@android:color/white"
-            android:textSize="14sp"/>
+        android:paddingTop="16dp">
 
         <Button
-            android:id="@+id/button_start_akuna"
+            android:id="@+id/sign_in_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/start_akuna"
-            android:textColor="@android:color/white"
-            android:visibility="gone"
-            tools:visibility="visible"/>
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/transition_round_button"
+            android:text="@string/signed_in"
+            android:visibility="visible"/>
 
-    </LinearLayout>
+        <Button
+            android:id="@+id/login_with_password"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:text="@string/signed_in"
+            android:visibility="visible"/>
+        <com.facebook.login.widget.LoginButton
+            android:id="@+id/login_with_facebook"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/login_with_facebook" />
+
+    </RelativeLayout>
 
 
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@color/blue_grey_900">
-
-        <com.google.android.gms.common.SignInButton
-            android:id="@+id/sign_in_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:visibility="visible"
-            tools:visibility="gone"/>
+        android:background="#ddd"
+        >
 
         <Button
             android:id="@+id/continue_without_sign"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/continue_without_sign"
-            android:visibility="invisible"/>
-
-        <LinearLayout
-            android:id="@+id/sign_out_and_disconnect"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:orientation="vertical"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp"
-            android:visibility="gone"
-            tools:visibility="visible">
-
-            <Button
-                android:id="@+id/sign_out_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="@string/sign_out"
-                android:visibility="visible"/>
-
-            <Button
-                android:id="@+id/disconnect_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/disconnect"
-                />
-
-        </LinearLayout>
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:text="@string/continue_without_sign"/>
 
     </RelativeLayout>
 

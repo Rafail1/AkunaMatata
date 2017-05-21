@@ -7,6 +7,7 @@ public class Photo extends Entity {
     private String  mEventId;
     private String mPath;
     private String mUri;
+    private int mOrientation;
 
     public String getFromUser() {
         return mFromUser;
@@ -56,5 +57,12 @@ public class Photo extends Entity {
 
     public void setUri(String uri) {
         mUri = uri;
+    }
+
+    public void setOrientation(int orientation) {
+        mOrientation = orientation;
+    }
+    public int getOrientation() {
+        return mOrientation;
     }
 }

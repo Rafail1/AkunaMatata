@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:state_pressed="true"
+        android:radius="6dp"
+        android:color="@color/colorPrimaryDark">
+
+    </item>
+    <item
+        android:state_enabled="false"
+        android:radius="6dp"
+        android:alpha="@dimen/disabled_alpha_default"
+        android:color="@color/colorPrimaryDark">
+    </item>
+    <item
+        android:state_enabled="true"
+        android:radius="6dp"
+        android:color="@color/colorPrimary">
+    </item>
+</selector>

@@ -1,30 +1,34 @@
-package by.raf.akunamatata.activities; /**
- * Copyright 2016 Google Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+package by.raf.akunamatata.activities;
 
 
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.AccessToken;
+import com.facebook.AccessTokenTracker;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.internal.CallbackManagerImpl;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
+import com.firebase.client.AuthData;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -37,18 +41,18 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+
+import java.security.AlgorithmParameterGenerator;
 
 import by.raf.akunamatata.R;
 import by.raf.akunamatata.model.DataProvider;
 import by.raf.akunamatata.model.User;
 import by.raf.akunamatata.services.UserIntentService;
 
-/**
- * Demonstrate Firebase Authentication using a Google ID Token.
- */
 public class GoogleSignInActivity extends BaseActivity implements
         GoogleApiClient.OnConnectionFailedListener,
         View.OnClickListener {
@@ -56,20 +60,64 @@ public class GoogleSignInActivity extends BaseActivity implements
     private static final String TAG = "GoogleActivity";
     private static final int RC_SIGN_IN = 9001;
     private FirebaseAuth mAuth;
+    private ProgressDialog mAuthProgressDialog;
+    private Firebase.AuthStateListener mAuthStateListener;
     private GoogleApiClient mGoogleApiClient;
-    private TextView mStatusTextView;
-    private TextView mDetailTextView;
+    private Button mSignInButton;
+    private Firebase mFirebaseRef;
+    private LoginButton mFacebookLoginButton;
+    private CallbackManager mFacebookCallbackManager;
+    private EditText mEmailField;
+    private EditText mPasswordField;
 
 
+    public static Intent newIntent(Context context) {
+        return new Intent(context, GoogleSignInActivity.class);
+    }
+    private void handleFacebookAccessToken(AccessToken token) {
+        Log.d(TAG, "handleFacebookAccessToken:" + token);
+
+        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "signInWithCredential:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            updateUI(user);
+                        } else {
+                            Log.w(TAG, "signInWithCredential:failure", task.getException());
+                            Toast.makeText(GoogleSignInActivity.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+                            updateUI(null);
+                        }
+
+                    }
+                });
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
+        FacebookSdk.sdkInitialize(getApplicationContext());
         setContentView(R.layout.fragment_auth);
-        mStatusTextView = (TextView) findViewById(R.id.status);
-        mDetailTextView = (TextView) findViewById(R.id.detail);
-        findViewById(R.id.sign_in_button).setOnClickListener(this);
-        findViewById(R.id.sign_out_button).setOnClickListener(this);
-        findViewById(R.id.disconnect_button).setOnClickListener(this);
+
+        mSignInButton = (Button)findViewById(R.id.sign_in_button);
+        mSignInButton.setOnClickListener(this);
+        Firebase.setAndroidContext(getApplicationContext());
+        mFirebaseRef = new Firebase(getResources().getString(R.string.firebase_url));
+
+        mEmailField = (EditText) findViewById(R.id.field_email);
+        mPasswordField = (EditText) findViewById(R.id.field_password);
+
+        // Buttons
+        findViewById(R.id.email_sign_in_button).setOnClickListener(this);
+        findViewById(R.id.email_create_account_button).setOnClickListener(this);
+        findViewById(R.id.verify_email_button).setOnClickListener(this);
+
+
+        findViewById(R.id.continue_without_sign).setOnClickListener(this);
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
@@ -78,8 +126,53 @@ public class GoogleSignInActivity extends BaseActivity implements
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
+        mFacebookCallbackManager = CallbackManager.Factory.create();
 
+        mFacebookLoginButton = (LoginButton) findViewById(R.id.login_with_facebook);
+        mFacebookLoginButton.setReadPermissions("email", "public_profile");
+        mFacebookLoginButton.registerCallback(mFacebookCallbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                Log.d(TAG, "facebook:onSuccess:" + loginResult);
+                handleFacebookAccessToken(loginResult.getAccessToken());
+            }
+
+            @Override
+            public void onCancel() {
+                Log.d(TAG, "facebook:onCancel");
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+                Log.d(TAG, "facebook:onError", error);
+                // ...
+            }
+        });
+        mAuthProgressDialog = new ProgressDialog(this);
+        mAuthProgressDialog.setTitle("Loading");
+        mAuthProgressDialog.setMessage("Authenticating with Firebase...");
+        mAuthProgressDialog.setCancelable(false);
+        mAuthProgressDialog.show();
+        mAuthStateListener = new Firebase.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(AuthData authData) {
+                mAuthProgressDialog.dismiss();
+                updateUI(mAuth.getCurrentUser());
+            }
+        };
+        /* Check if the user is authenticated with Firebase already. If this is the case we can set the authenticated
+         * user and hide hide any login buttons */
+        mFirebaseRef.addAuthStateListener(mAuthStateListener);
         mAuth = FirebaseAuth.getInstance();
+    }
+
+
+    @Override
+    public void onStop() {
+        if(mAuthProgressDialog.isShowing()) {
+            mAuthProgressDialog.dismiss();
+        }
+        super.onStop();
     }
 
     @Override
@@ -100,8 +193,11 @@ public class GoogleSignInActivity extends BaseActivity implements
 
                 firebaseAuthWithGoogle(account);
             } else {
+
                 updateUI(null);
             }
+        } else if(requestCode == CallbackManagerImpl.RequestCodeOffset.Login.toRequestCode()) {
+            mFacebookCallbackManager.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -131,6 +227,7 @@ public class GoogleSignInActivity extends BaseActivity implements
                 });
     }
     private void signIn() {
+
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
@@ -167,21 +264,14 @@ public class GoogleSignInActivity extends BaseActivity implements
         SharedPreferences sp = getSharedPreferences(DataProvider.AKUNA_MATATA_PREFERENCES, MODE_PRIVATE);
 
         if (user != null) {
-            mStatusTextView.setText(getString(R.string.google_status_fmt, user.getEmail()));
 
             sp.edit().putString(User.PREF_ID, user.getUid()).apply();
 
             startAkuna();
-            findViewById(R.id.sign_in_button).setVisibility(View.GONE);
-            findViewById(R.id.sign_out_and_disconnect).setVisibility(View.VISIBLE);
 
         } else {
-            mStatusTextView.setText(R.string.signed_out);
-            mDetailTextView.setText(null);
             sp.edit().putString(User.PREF_ID, null).apply();
 
-            findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
-            findViewById(R.id.sign_out_and_disconnect).setVisibility(View.GONE);
         }
     }
 
@@ -195,11 +285,131 @@ public class GoogleSignInActivity extends BaseActivity implements
     public void onClick(View v) {
         int i = v.getId();
         if (i == R.id.sign_in_button) {
+//            TransitionDrawable trans = (TransitionDrawable) mSignInButton.getBackground();
+//            trans.startTransition(200);
             signIn();
-        } else if (i == R.id.sign_out_button) {
-            signOut();
-        } else if (i == R.id.disconnect_button) {
-            revokeAccess();
+        }  else if (i == R.id.continue_without_sign) {
+            startAkuna();
+        } else if (i == R.id.email_create_account_button) {
+            createAccount(mEmailField.getText().toString(), mPasswordField.getText().toString());
+        } else if (i == R.id.email_sign_in_button) {
+            signIn(mEmailField.getText().toString(), mPasswordField.getText().toString());
+        } else if (i == R.id.verify_email_button) {
+            sendEmailVerification();
         }
     }
+
+    /*Email password */
+
+
+
+
+    private void createAccount(String email, String password) {
+        Log.d(TAG, "createAccount:" + email);
+        if (!validateForm()) {
+            return;
+        }
+
+        showProgressDialog();
+
+        mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "createUserWithEmail:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            updateUI(user);
+                        } else {
+                            Log.w(TAG, "createUserWithEmail:failure", task.getException());
+                                Toast.makeText(GoogleSignInActivity.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+                            updateUI(null);
+                        }
+                        hideProgressDialog();
+                    }
+                });
+    }
+
+    private void signIn(String email, String password) {
+        Log.d(TAG, "signIn:" + email);
+        if (!validateForm()) {
+            return;
+        }
+
+        showProgressDialog();
+
+        // [START sign_in_with_email]
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            Log.d(TAG, "signInWithEmail:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            updateUI(user);
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Log.w(TAG, "signInWithEmail:failure", task.getException());
+                            Toast.makeText(GoogleSignInActivity.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+                            updateUI(null);
+                        }
+
+                        hideProgressDialog();
+                        // [END_EXCLUDE]
+                    }
+                });
+        // [END sign_in_with_email]
+    }
+
+
+    private void sendEmailVerification() {
+        final FirebaseUser user = mAuth.getCurrentUser();
+        if(user == null) {
+            return;
+        }
+        findViewById(R.id.verify_email_button).setEnabled(false);
+        user.sendEmailVerification()
+                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        findViewById(R.id.verify_email_button).setEnabled(true);
+                        if (task.isSuccessful()) {
+                            Toast.makeText(GoogleSignInActivity.this,
+                                    "Verification email sent to " + user.getEmail(),
+                                    Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e(TAG, "sendEmailVerification", task.getException());
+                            Toast.makeText(GoogleSignInActivity.this,
+                                    "Failed to send verification email.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+
+    private boolean validateForm() {
+        boolean valid = true;
+
+        String email = mEmailField.getText().toString();
+        if (TextUtils.isEmpty(email)) {
+            mEmailField.setError("Required.");
+            valid = false;
+        } else {
+            mEmailField.setError(null);
+        }
+
+        String password = mPasswordField.getText().toString();
+        if (TextUtils.isEmpty(password)) {
+            mPasswordField.setError("Required.");
+            valid = false;
+        } else {
+            mPasswordField.setError(null);
+        }
+
+        return valid;
+    }
+
 }

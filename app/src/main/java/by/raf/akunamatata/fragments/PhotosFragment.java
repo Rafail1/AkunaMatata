@@ -9,16 +9,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +23,7 @@ import by.raf.akunamatata.R;
 import by.raf.akunamatata.activities.PhotosPageViewActivity;
 import by.raf.akunamatata.model.DataProvider;
 import by.raf.akunamatata.model.Event;
+import by.raf.akunamatata.model.GlobalVars;
 import by.raf.akunamatata.model.Photo;
 
 public class PhotosFragment extends Fragment {
@@ -135,41 +132,8 @@ public class PhotosFragment extends Fragment {
 
         public void bindPhoto(final Photo photo) {
             mPhoto = photo;
-
-            mImageView.getViewTreeObserver()
-                    .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                        @Override
-                        public void onGlobalLayout() {
-                            mImageView.getViewTreeObserver()
-                                    .removeOnGlobalLayoutListener(this);
-                            new Picasso.Builder(getContext().getApplicationContext())
-                                    .build()
-                                    .load(photo.getUri())
-                                    .rotate(90)
-                                    .networkPolicy(NetworkPolicy.OFFLINE)
-                                    .resize(mImageView.getHeight(), mImageView.getWidth())
-                                    .centerCrop()
-                                    .placeholder(R.drawable.ic_stat_ic_notification)
-                                    .error(R.drawable.uploading)
-                                    .into(mImageView, new Callback() {
-                                        @Override
-                                        public void onSuccess() {
-                                        }
-
-                                        @Override
-                                        public void onError() {
-                                            Picasso.with(getContext().getApplicationContext())
-                                                    .load(photo.getUri())
-                                                    .rotate(90)
-                                                    .resize(mImageView.getWidth(),mImageView.getHeight())
-                                                    .centerCrop()
-                                                    .placeholder(R.drawable.ic_stat_ic_notification)
-                                                    .error(R.drawable.uploading)
-                                                    .into(mImageView);
-                                        }
-                                    });
-                        }
-                    });
+            ((GlobalVars)getContext().getApplicationContext())
+                    .loadImage(mImageView, mPhoto.getUri());
             mImageView.setOnClickListener(this);
         }
 

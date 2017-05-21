@@ -16,15 +16,14 @@ import java.util.ArrayList;
 
 import by.raf.akunamatata.R;
 import by.raf.akunamatata.fragments.OnePhotoFragment;
+import by.raf.akunamatata.fragments.ViewPagerFragment;
 import by.raf.akunamatata.model.Photo;
 
-public class PhotosPageViewActivity extends AppCompatActivity {
+public class PhotosPageViewActivity extends AppCompatActivity implements ViewPagerFragment.Callbacks {
     public static final String PHOTO_ID = "PHOTO_ID";
     private static final String PHOTOS = "PHOTOS";
     private ArrayList<Photo> mPhotos;
     private int currentApiVersion;
-    private PhotoAdapter mAdapter;
-    private ViewPager viewPager;
 
     public static Intent newIntent(Context packageContext, String photoId, ArrayList<Photo> list) {
         Intent intent = new Intent(packageContext, PhotosPageViewActivity.class);
@@ -46,6 +45,11 @@ public class PhotosPageViewActivity extends AppCompatActivity {
                             | View.SYSTEM_UI_FLAG_FULLSCREEN
                             | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
+    }
+
+    @Override
+    public void onPageSelected(int pos) {
+
     }
 
     private class PhotoAdapter extends FragmentPagerAdapter {
@@ -95,9 +99,9 @@ public class PhotosPageViewActivity extends AppCompatActivity {
 
         setContentView(R.layout.view_pager);
         mPhotos = (ArrayList<Photo>) getIntent().getExtras().getSerializable(PHOTOS);
-        viewPager = (ViewPager) findViewById(R.id.viewpager);
-        mAdapter = new PhotoAdapter(getSupportFragmentManager());
-        viewPager.setAdapter(mAdapter);
+        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
+        PhotoAdapter adapter = new PhotoAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(adapter);
         int pos = 0;
         String currentId = getIntent().getExtras().getString(PhotosPageViewActivity.PHOTO_ID);
         for (int i = 0; i < mPhotos.size(); i++) {
@@ -106,8 +110,24 @@ public class PhotosPageViewActivity extends AppCompatActivity {
                 break;
             }
         }
+
+
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
         viewPager.setCurrentItem(pos);
     }
-
-
 }

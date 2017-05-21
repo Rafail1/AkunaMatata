@@ -1,5 +1,6 @@
 package by.raf.akunamatata.fragments;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,16 +12,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import by.raf.akunamatata.R;
-import by.raf.akunamatata.activities.EventActivity;
 import by.raf.akunamatata.model.DataProvider;
-
-/**
- * Created by raf on 5/11/17.
- */
 
 public class ViewPagerFragment extends Fragment {
     private static final String ARG_POS = "ARG_POS";
-    private ViewPager mViewPager;
+    private Callbacks mCallbacks;
+    private ViewPager viewPager;
+
     public static ViewPagerFragment newInstance(int pos) {
         Bundle args = new Bundle();
         args.putInt(ARG_POS, pos);
@@ -28,19 +26,52 @@ public class ViewPagerFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
+    public interface Callbacks {
+        void onPageSelected(int pos);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mCallbacks = (Callbacks) context;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks = null;
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.view_pager, container, false);
-        return v;
+        return inflater.inflate(R.layout.view_pager, container, false);
     }
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mViewPager = (ViewPager)view.findViewById(R.id.viewpager);
+        viewPager = (ViewPager) view.findViewById(R.id.viewpager);
+
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                mCallbacks.onPageSelected(position);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-        mViewPager.setAdapter(new FragmentStatePagerAdapter(fragmentManager) {
+        viewPager.setAdapter(new FragmentStatePagerAdapter(fragmentManager) {
             @Override
             public Fragment getItem(int position) {
                 return EventFragment.newInstance(position);
@@ -51,6 +82,11 @@ public class ViewPagerFragment extends Fragment {
                 return DataProvider.getInstance().mEventList.size();
             }
         });
-        mViewPager.setCurrentItem(getArguments().getInt(ARG_POS));
+        viewPager.setCurrentItem(getArguments().getInt(ARG_POS));
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
     }
 }

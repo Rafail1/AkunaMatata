@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:id="@+id/main_layout"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@drawable/main_background"
+              android:orientation="vertical"
+              android:weightSum="4"
+              tools:context=".activities.GoogleSignInActivity">
+
+    <Button
+        android:id="@+id/sign_in_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:elevation="@dimen/auth_elevation"
+        android:text="@string/signed_in"
+        android:visibility="visible"/>
+
+    <Button
+        android:id="@+id/login_with_password"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/signed_in"
+        android:visibility="visible"/>
+
+    <com.facebook.login.widget.LoginButton
+        android:id="@+id/login_with_facebook"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/login_with_facebook"/>
+
+    <Button
+        android:id="@+id/email_create_account_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/create_account"/>
+
+    <EditText
+        android:id="@+id/field_password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_password"
+        android:inputType="textPassword"
+        />
+
+    <EditText
+        android:id="@+id/field_email"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_email"
+        android:inputType="textEmailAddress"
+        />
+
+    <Button
+        android:id="@+id/email_sign_in_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/sign_in"
+        />
+
+    <Button
+        android:id="@+id/verify_email_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/verify_email"/>
+
+    <Button
+        android:id="@+id/continue_without_sign"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="2dp"
+        android:text="@string/continue_without_sign"/>
+
+
+</LinearLayout>
