@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -26,7 +25,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -48,6 +46,9 @@ import java.util.Locale;
 import java.util.Observable;
 import java.util.Observer;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import by.raf.akunamatata.R;
 import by.raf.akunamatata.activities.PhotosActivity;
 import by.raf.akunamatata.model.DataProvider;
@@ -67,21 +68,20 @@ public class EventFragment extends Fragment implements Observer {
     public static final String ARG_EVENT_POSITION = "EVENT_POSITION";
     private static final int TAKE_PICTURE = 1;
     private static final String PARAM_PHOTO_FILE = "file_url";
-    private static final int SELECT_PIC = 2;
-    private static final int PROFILE_PIC_COUNT = 0;
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 3;
-    private ImageView mPicture;
-    private TextView mAuthor;
-    private TextView mTitle;
-    private TextView mAddress;
-    private TextView mDate;
-    private TextView mDetails;
-    private IWill mIWill;
-    private MyDecoView arcView;
-    private Button mHowItIs;
+    @BindView(R.id.detail_event_image) ImageView mPicture;
+    @BindView(R.id.detail_event_author) TextView mAuthor;
+    @BindView(R.id.detail_event_date) TextView mDate;
+    @BindView(R.id.detail_event_title) TextView mTitle;
+    @BindView(R.id.detail_event_address) TextView mAddress;
+    @BindView(R.id.detail_event_description) TextView mDetails;
+    @BindView(R.id.detail_event_i_will) IWill mIWill;
+    @BindView(R.id.detail_event_request) Button mHowItIs;
+    @BindView(R.id.detail_evrnt_add_photp) Button mAddPhoto;
+    @BindView(R.id.dynamicArcView) MyDecoView mMyDecoView;
+
     private Event mEvent;
-    private int pos;
-    private Button mAddPhoto;
+    private int position;
     private long currentImageTime;
     private NotificationManager mNotifyManager;
     private NotificationCompat.Builder mBuilder;
@@ -91,6 +91,7 @@ public class EventFragment extends Fragment implements Observer {
     private String mUploadingInProgress;
     private String mUploadingError;
     private String mUploadingInSuccess;
+    private Unbinder unbinder;
 
     public static EventFragment newInstance(int position) {
         Bundle args = new Bundle();
@@ -106,8 +107,8 @@ public class EventFragment extends Fragment implements Observer {
         if (savedInstanceState != null) {
             imageUri = savedInstanceState.getParcelable(PARAM_PHOTO_FILE);
         }
-        pos = getArguments().getInt(ARG_EVENT_POSITION, 0);
-        mEvent = DataProvider.getInstance().mEventList.get(pos);
+        position = getArguments().getInt(ARG_EVENT_POSITION, 0);
+        mEvent = DataProvider.getInstance().mEventList.get(position);
     }
 
     @Override
@@ -351,16 +352,8 @@ public class EventFragment extends Fragment implements Observer {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_event, container, false);
+        unbinder = ButterKnife.bind(this, v);
 
-        mPicture = (ImageView) v.findViewById(R.id.detail_event_image);
-        mAuthor = (TextView) v.findViewById(R.id.detail_event_author);
-        mDate = (TextView) v.findViewById(R.id.detail_event_date);
-        mTitle = (TextView) v.findViewById(R.id.detail_event_title);
-        mAddress = (TextView) v.findViewById(R.id.detail_event_address);
-        mDetails = (TextView) v.findViewById(R.id.detail_event_description);
-        mIWill = (IWill) v.findViewById(R.id.detail_event_i_will);
-        mHowItIs = (Button) v.findViewById(R.id.detail_event_request);
-        mAddPhoto = (Button) v.findViewById(R.id.detail_evrnt_add_photp);
         mAddPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -386,10 +379,9 @@ public class EventFragment extends Fragment implements Observer {
         mHowItIs.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(PhotosActivity.newIntent(getContext(), pos));
+                startActivity(PhotosActivity.newIntent(getContext(), position));
             }
         });
-        arcView = (MyDecoView) v.findViewById(R.id.dynamicArcView);
 
         final String myId = UserManager.getInstance().getUID();
         if (myId == null) {
@@ -406,13 +398,18 @@ public class EventFragment extends Fragment implements Observer {
         return v;
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
+    }
 
     @Override
     public void onResume() {
         super.onResume();
-        arcView.disableHardwareAccelerationForDecoView();
+        mMyDecoView.disableHardwareAccelerationForDecoView();
         float[] stats = mEvent.mygetStat();
-        arcView.start(stats);
+        mMyDecoView.start(stats);
         fillImageView(mEvent.getPicture());
     }
 
@@ -420,7 +417,7 @@ public class EventFragment extends Fragment implements Observer {
     public void update(Observable observable, Object o) {
         if (observable instanceof ServerListener) {
             int[] args = (int[]) o;
-            if (args[2] != pos) {
+            if (args[2] != position) {
                 return;
             }
             if (args[0] == Event.OBSERVER_ID) {
@@ -459,7 +456,7 @@ public class EventFragment extends Fragment implements Observer {
 
         if (getUserVisibleHint()) {
             float[] newStats = newEvent.mygetStat();
-            arcView.renew(newStats);
+            mMyDecoView.renew(newStats);
         }
         mEvent = newEvent;
     }

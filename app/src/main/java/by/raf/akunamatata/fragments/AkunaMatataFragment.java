@@ -25,6 +25,10 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import butterknife.Unbinder;
 import by.raf.akunamatata.R;
 import by.raf.akunamatata.activities.AkunaMatataActivity;
 import by.raf.akunamatata.model.DataProvider;
@@ -41,7 +45,8 @@ import static by.raf.akunamatata.model.Event.CHANGED;
 import static by.raf.akunamatata.model.Event.REMOVED;
 
 public class AkunaMatataFragment extends Fragment implements Observer {
-    private RecyclerView mRecyclerView;
+    private Unbinder unbinder;
+    @BindView(R.id.events_recycler_view) RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private Callbacks mCallbacks;
     private String searchText;
@@ -101,7 +106,7 @@ public class AkunaMatataFragment extends Fragment implements Observer {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_akuna_matata, container, false);
-        mRecyclerView = (RecyclerView) v.findViewById(R.id.events_recycler_view);
+        unbinder = ButterKnife.bind(this, v);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         RecyclerView.ItemAnimator animator = mRecyclerView.getItemAnimator();
@@ -112,6 +117,11 @@ public class AkunaMatataFragment extends Fragment implements Observer {
         return v;
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
+    }
 
     @Override
     public void update(Observable observable, Object o) {
@@ -171,17 +181,18 @@ public class AkunaMatataFragment extends Fragment implements Observer {
         }
     }
 
-    private class EventHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        private ImageView mPicture;
-        private TextView mAuthor;
-        private TextView mTitle;
-        private TextView mDetails;
-        private TextView mDate;
-        private TextView mCount;
-        private IWill mAction;
+    class EventHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        @BindView(R.id.event_image) ImageView mPicture;
+        @BindView(R.id.event_author) TextView mAuthor;
+        @BindView(R.id.event_title) TextView mTitle;
+        @BindView(R.id.event_detail_text) TextView mDetails;
+        @BindView(R.id.event_date) TextView mDate;
+        @BindView(R.id.text_count) TextView mCount;
+        @BindView(R.id.button_will_be) IWill mAction;
+
         private Event mEvent;
 
-        public void setVisibility(boolean isVisible){
+        void setVisibility(boolean isVisible){
             RecyclerView.LayoutParams param = (RecyclerView.LayoutParams)itemView.getLayoutParams();
             if (isVisible){
                 param.height = LinearLayout.LayoutParams.WRAP_CONTENT;
@@ -199,20 +210,11 @@ public class AkunaMatataFragment extends Fragment implements Observer {
 
         EventHolder(View v) {
             super(v);
-            v.findViewById(R.id.cardView).setOnClickListener(this);
-            mDetails = (TextView) v.findViewById(R.id.event_detail_text);
-            mPicture = (ImageView) v.findViewById(R.id.event_image);
-            mAuthor = (TextView) v.findViewById(R.id.event_author);
-            mTitle = (TextView) v.findViewById(R.id.event_title);
-            mCount = (TextView) v.findViewById(R.id.text_count);
-            mDate = (TextView) v.findViewById(R.id.event_date);
-            mAction = (IWill) v.findViewById(R.id.button_will_be);
-
+            ButterKnife.bind(this, v);
         }
-
+        @OnClick(R.id.cardView)
         @Override
         public void onClick(View view) {
-
             mCallbacks.onEventSelected(getAdapterPosition());
         }
 

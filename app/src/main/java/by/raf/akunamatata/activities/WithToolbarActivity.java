@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import by.raf.akunamatata.R;
 import by.raf.akunamatata.model.Category;
 import by.raf.akunamatata.model.DataProvider;
@@ -33,13 +35,16 @@ import by.raf.akunamatata.model.managers.UserManager;
 public class WithToolbarActivity extends AppCompatActivity implements Observer, NavigationView.OnNavigationItemSelectedListener {
     public static final String MENU_CURRENT = "MENU_CURRENT";
     protected static final String MENU_CURRENT_NAME = "MENU_CURRENT_NAME";
-    protected DrawerLayout mDrawerLayout;
-    protected NavigationView mNavigationView;
     protected ArrayList<Category> mCategories;
     private SubMenu mCategoriesSubMenu;
     private MenuItem mPreviousMenuItem;
     protected SharedPreferences sp;
     private DataProvider mDataProvider;
+
+    @BindView(R.id.drawer_layout) DrawerLayout mDrawerLayout;
+    @BindView(R.id.nav_view) NavigationView mNavigationView;
+    @BindView(R.id.toolbar) Toolbar mToolBar;
+
     @LayoutRes
     protected int getResId() {
         return R.layout.activity_fragment;
@@ -61,20 +66,17 @@ public class WithToolbarActivity extends AppCompatActivity implements Observer, 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(getResId());
-
+        ButterKnife.bind(this);
         sp = getSharedPreferences(DataProvider.AKUNA_MATATA_PREFERENCES, MODE_PRIVATE);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setSupportActionBar(mToolBar);
 
         mDataProvider = DataProvider.getInstance();
         mDataProvider.getCategories();
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, mDrawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close);
+                this, mDrawerLayout, mToolBar, R.string.drawer_open, R.string.drawer_close);
         mDrawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        mNavigationView = (NavigationView) findViewById(R.id.nav_view);
         mNavigationView.setNavigationItemSelectedListener(this);
         mCategoriesSubMenu = mNavigationView.getMenu().addSubMenu(0, 0, 0, R.string.menu_group_categories);
     }
@@ -92,7 +94,7 @@ public class WithToolbarActivity extends AppCompatActivity implements Observer, 
             }
             return false;
         } else if(id == R.id.menu_sign_in) {
-            Intent intent = GoogleSignInActivity.newIntent(this);
+            Intent intent = SignInActivity.newIntent(this);
             startActivity(intent);
         } else {
             if (preventSameMenuClick() && mPreviousMenuItem != null && mPreviousMenuItem.equals(item)) {
@@ -140,9 +142,8 @@ public class WithToolbarActivity extends AppCompatActivity implements Observer, 
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
+        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            mDrawerLayout.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
         }

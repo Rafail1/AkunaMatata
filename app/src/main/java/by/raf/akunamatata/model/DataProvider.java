@@ -60,7 +60,7 @@ public class DataProvider extends ServerListener {
         sEvents = new HashMap<>();
         sUsers = new HashMap<>();
         mEventList = new ArrayList<>();
-//        initData();
+        initData();
 
     }
 

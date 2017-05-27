@@ -39,9 +39,9 @@ public class AkunaMatataActivity extends SingleFragmentActivity implements Akuna
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ActionBar abar = getSupportActionBar();
-        if(abar != null) {
-            abar.setTitle(sp.getString(WithToolbarActivity.MENU_CURRENT_NAME, null));
+        ActionBar actionBar = getSupportActionBar();
+        if(actionBar != null) {
+            actionBar.setTitle(sp.getString(WithToolbarActivity.MENU_CURRENT_NAME, null));
         }
     }
 

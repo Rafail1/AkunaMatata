@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-import by.raf.akunamatata.activities.GoogleSignInActivity;
+import by.raf.akunamatata.activities.SignInActivity;
 import by.raf.akunamatata.model.DataProvider;
 import by.raf.akunamatata.model.User;
 
@@ -81,7 +81,7 @@ public class UserManager extends Observable {
 
     public void logout(final Context context) {
         if (NetworkManager.getInstance().isNetworkConnected(context)) {
-            Intent intent = new Intent(context, GoogleSignInActivity.class);
+            Intent intent = new Intent(context, SignInActivity.class);
             intent.putExtra("LOGOUT", true);
             context.startActivity(intent);
         }

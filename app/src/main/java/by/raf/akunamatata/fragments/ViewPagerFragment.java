@@ -11,14 +11,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import by.raf.akunamatata.R;
 import by.raf.akunamatata.model.DataProvider;
 
 public class ViewPagerFragment extends Fragment {
     private static final String ARG_POS = "ARG_POS";
     private Callbacks mCallbacks;
-    private ViewPager viewPager;
-
+    private Unbinder unbinder;
+    @BindView(R.id.viewpager) ViewPager mViewPager;
     public static ViewPagerFragment newInstance(int pos) {
         Bundle args = new Bundle();
         args.putInt(ARG_POS, pos);
@@ -51,9 +54,8 @@ public class ViewPagerFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewPager = (ViewPager) view.findViewById(R.id.viewpager);
-
-        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        unbinder = ButterKnife.bind(this, view);
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
@@ -71,7 +73,7 @@ public class ViewPagerFragment extends Fragment {
         });
 
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-        viewPager.setAdapter(new FragmentStatePagerAdapter(fragmentManager) {
+        mViewPager.setAdapter(new FragmentStatePagerAdapter(fragmentManager) {
             @Override
             public Fragment getItem(int position) {
                 return EventFragment.newInstance(position);
@@ -82,7 +84,13 @@ public class ViewPagerFragment extends Fragment {
                 return DataProvider.getInstance().mEventList.size();
             }
         });
-        viewPager.setCurrentItem(getArguments().getInt(ARG_POS));
+        mViewPager.setCurrentItem(getArguments().getInt(ARG_POS));
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
     }
 
     @Override

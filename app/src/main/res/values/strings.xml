@@ -101,4 +101,7 @@
     <string name="uploading">Загрузка</string>
     <string name="progress_uploading">загружаю</string>
     <string name="success_uploading">Загрузка завершена</string>
+    <string name="auth_with_firebase">Авторизация</string>
+    <string name="auth_failed">Ошибка авторизации</string>
+    <string name="google_service_connect_failed">Ошибка Google Play Services</string>
 </resources>

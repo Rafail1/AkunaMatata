@@ -19,6 +19,9 @@ import com.google.firebase.database.DatabaseReference;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import by.raf.akunamatata.R;
 import by.raf.akunamatata.activities.PhotosPageViewActivity;
 import by.raf.akunamatata.model.DataProvider;
@@ -28,12 +31,13 @@ import by.raf.akunamatata.model.Photo;
 
 public class PhotosFragment extends Fragment {
     public static final String ARG_EVENT_POS = "ARG_EVENT_POS";
-    private RecyclerView mRecyclerView;
+    @BindView(R.id.events_photos_recycler_view) RecyclerView mRecyclerView;
     private Event mEvent;
     private PhotoAdapter mPhotoAdapter;
     private ChildEventListener mPhotoListener;
     private ArrayList<Photo> mPhotos = new ArrayList<>();
     private DatabaseReference myRefPhotos;
+    private Unbinder unbinder;
 
     public void unregisterPhotoListener() {
         myRefPhotos.removeEventListener(mPhotoListener);
@@ -110,9 +114,10 @@ public class PhotosFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_event_photos, container, false);
+        unbinder = ButterKnife.bind(this, v);
         int eventPos = getArguments().getInt(ARG_EVENT_POS);
         mEvent = DataProvider.getInstance().getEventList().get(eventPos);
-        mRecyclerView = (RecyclerView) v.findViewById(R.id.events_photos_recycler_view);
+
         mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
         mPhotoAdapter = new PhotoAdapter(mPhotos);
         mRecyclerView.setAdapter(mPhotoAdapter);
@@ -121,13 +126,19 @@ public class PhotosFragment extends Fragment {
         return v;
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
+    }
+
     private class PhotoHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private Photo mPhoto;
-        private ImageView mImageView;
+        @BindView(R.id.event_photo) ImageView mImageView;
 
         public PhotoHolder(View v) {
             super(v);
-            mImageView = (ImageView) v.findViewById(R.id.event_photo);
+            ButterKnife.bind(this, v);
         }
 
         public void bindPhoto(final Photo photo) {

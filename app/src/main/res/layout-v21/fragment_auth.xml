@@ -7,7 +7,7 @@
               android:background="@drawable/main_background"
               android:orientation="vertical"
               android:weightSum="4"
-              tools:context=".activities.GoogleSignInActivity">
+              tools:context=".activities.SignInActivity">
 
     <Button
         android:id="@+id/sign_in_button"
@@ -15,14 +15,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:elevation="@dimen/auth_elevation"
-        android:text="@string/signed_in"
-        android:visibility="visible"/>
-
-    <Button
-        android:id="@+id/login_with_password"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/signed_in"
+        android:text="Enter"
         android:visibility="visible"/>
 
     <com.facebook.login.widget.LoginButton
@@ -60,12 +53,6 @@
         android:layout_height="wrap_content"
         android:text="@string/sign_in"
         />
-
-    <Button
-        android:id="@+id/verify_email_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/verify_email"/>
 
     <Button
         android:id="@+id/continue_without_sign"

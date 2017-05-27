@@ -28,8 +28,8 @@ public class EventActivity extends SingleFragmentActivity implements ViewPagerFr
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        int pos = getIntent().getIntExtra(POSITION, 0);
-        mEvent = DataProvider.getInstance().getEventList().get(pos);
+        int position = getIntent().getIntExtra(POSITION, 0);
+        mEvent = DataProvider.getInstance().getEventList().get(position);
         ActionBar actionBar = getSupportActionBar();
         if(actionBar != null) {
             actionBar.setTitle(mEvent.getTitle());
@@ -55,8 +55,8 @@ public class EventActivity extends SingleFragmentActivity implements ViewPagerFr
     }
 
     @Override
-    public void onPageSelected(int pos) {
-        mEvent = DataProvider.getInstance().getEventList().get(pos);
+    public void onPageSelected(int position) {
+        mEvent = DataProvider.getInstance().getEventList().get(position);
         ActionBar actionBar = getSupportActionBar();
         if(actionBar != null) {
             actionBar.setTitle(mEvent.getTitle());

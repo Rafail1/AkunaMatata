@@ -15,6 +15,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import by.raf.akunamatata.R;
 import by.raf.akunamatata.model.DataProvider;
 import by.raf.akunamatata.model.GlobalVars;
@@ -25,8 +28,9 @@ public class OnePhotoFragment extends Fragment {
     private static final String ARG_PHOTO_ID = "ARG_PHOTO_ID";
     private DatabaseReference mRef;
     private Photo mPhoto;
-    private ImageView mPicture;
+    @BindView(R.id.photo) ImageView mPicture;
     private ValueEventListener mListener;
+    private Unbinder unbinder;
 
     public static OnePhotoFragment newInstance(String photoId) {
 
@@ -53,7 +57,7 @@ public class OnePhotoFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.single_photo, container, false);
-        mPicture = (ImageView) view.findViewById(R.id.photo);
+        unbinder = ButterKnife.bind(this, view);
         String pid = getArguments().getString(ARG_PHOTO_ID);
         mRef = DataProvider.getInstance().getDatabase().getReference("akunamatata/photos/"+ pid);
         loadImage();
@@ -89,6 +93,13 @@ public class OnePhotoFragment extends Fragment {
             ((GlobalVars) getContext().getApplicationContext())
                     .loadImage(mPicture, mPhoto.getUri());
         }
+    }
+
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
     }
 
     @Override
