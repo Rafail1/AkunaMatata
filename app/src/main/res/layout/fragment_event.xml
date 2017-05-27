@@ -1,60 +1,156 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView  xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools">
 
     <LinearLayout
-                  android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:orientation="vertical">
-        <TextView
-            android:id="@+id/detail_event_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-        <ImageView
-            android:id="@+id/detail_event_image"
-            android:layout_width="300dp"
-            android:layout_height="250dp"/>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/detail_event_date"
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-        <TextView
-            android:id="@+id/detail_event_author"
+            android:layout_height="wrap_content"
+            android:background="@color/black"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/detail_event_image"
+                android:layout_width="wrap_content"
+                android:layout_height="200dp"/>
+        </LinearLayout>
+
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/detail_event_date"
+                android:layout_width="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_height="wrap_content"
+                tools:text="12.06.1998 15:34"
+                android:layout_alignParentRight="true"/>
+            <TextView
+                android:id="@+id/detail_event_title"
+                android:textStyle="bold"
+                android:layout_below="@+id/detail_event_date"
+                android:textSize="@dimen/text_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="Mastering ToolsNs Mastering ToolsNs Mastering ToolsNs Mastering ToolsNs"/>
+            <TextView
+                android:id="@+id/detail_event_author"
+                android:layout_below="@+id/detail_event_title"
+                android:textStyle="bold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="Mastering ToolsNs"
+                />
+
+
+
+        </RelativeLayout>
 
 
         <TextView
             android:id="@+id/detail_event_address"
             android:layout_width="match_parent"
+            tools:text="Mastering ToolsNs Mastering ToolsNs Mastering ToolsNs Mastering ToolsNs"
             android:layout_height="wrap_content"/>
 
         <TextView
             android:id="@+id/detail_event_description"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-
+            android:layout_height="wrap_content"
+            tools:text="Mastering ToolsNs Mastering ToolsNs Mastering ToolsNs Mastering ToolsNs
+Mastering ToolsNs Mastering ToolsNs Mastering ToolsNs Mastering ToolsNs
+Mastering ToolsNs Mastering ToolsNs Mastering ToolsNs Mastering ToolsNs
+Mastering ToolsNs Mastering ToolsNs Mastering ToolsNs Mastering ToolsNs
+Mastering ToolsNs Mastering ToolsNs Mastering ToolsNs Mastering ToolsNs"/>
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <LinearLayout
+        android:layout_width="200dp"
+        android:layout_height="wrap_content">
         <by.raf.akunamatata.myviews.MyDecoView
             android:id="@+id/dynamicArcView"
             android:layout_width="200dp"
             android:layout_height="200dp"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:orientation="vertical"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <View
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:background="@color/mans"/>
+            <TextView
+                android:text="@string/mans"
+                android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <View
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:background="@color/girls"/>
+            <TextView
+                android:text="@string/girls"
+                android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <View
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:background="@color/nlo"/>
+            <TextView
+                android:text="@string/nlo"
+                android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
+
 
         <by.raf.akunamatata.myviews.IWill
             android:id="@+id/detail_event_i_will"
             android:layout_width="wrap_content"
+            tools:text="Я пойду"
             android:layout_height="wrap_content"/>
 
         <Button
             android:id="@+id/detail_event_request"
             android:layout_width="match_parent"
-            android:text="@string/button_watch_photos"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:text="@string/button_watch_photos"/>
+
         <Button
             android:id="@+id/detail_evrnt_add_photp"
-            android:text="@string/button_add_photo"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:text="@string/button_add_photo"/>
     </LinearLayout>
 </ScrollView>

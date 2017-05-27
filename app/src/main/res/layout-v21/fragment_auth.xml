@@ -4,40 +4,11 @@
               android:id="@+id/main_layout"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:background="@drawable/main_background"
+              android:gravity="center"
               android:orientation="vertical"
               android:weightSum="4"
               tools:context=".activities.SignInActivity">
 
-    <Button
-        android:id="@+id/sign_in_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:elevation="@dimen/auth_elevation"
-        android:text="Enter"
-        android:visibility="visible"/>
-
-    <com.facebook.login.widget.LoginButton
-        android:id="@+id/login_with_facebook"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="@string/login_with_facebook"/>
-
-    <Button
-        android:id="@+id/email_create_account_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/create_account"/>
-
-    <EditText
-        android:id="@+id/field_password"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/hint_password"
-        android:inputType="textPassword"
-        />
 
     <EditText
         android:id="@+id/field_email"
@@ -47,12 +18,64 @@
         android:inputType="textEmailAddress"
         />
 
-    <Button
-        android:id="@+id/email_sign_in_button"
+    <EditText
+        android:id="@+id/field_password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/sign_in"
+        android:hint="@string/hint_password"
+        android:inputType="textPassword"
         />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/email_create_account_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/create_account"
+            tools:ignore="ButtonStyle"/>
+
+        <Button
+            android:id="@+id/email_sign_in_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/sign_in"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <in.championswimmer.libsocialbuttons.fabs.FABGoogleplus
+            android:id="@+id/google_sign_in_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="7dp"/>
+
+
+        <com.facebook.login.widget.LoginButton
+            android:id="@+id/login_with_facebook"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/login_with_facebook"
+            android:visibility="gone"
+            />
+
+        <in.championswimmer.libsocialbuttons.fabs.FABFacebook
+            android:id="@+id/fb"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="7dp"/>
+    </LinearLayout>
 
     <Button
         android:id="@+id/continue_without_sign"

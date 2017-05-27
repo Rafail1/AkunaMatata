@@ -132,7 +132,7 @@ public class PhotosFragment extends Fragment {
         unbinder.unbind();
     }
 
-    private class PhotoHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    class PhotoHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private Photo mPhoto;
         @BindView(R.id.event_photo) ImageView mImageView;
 

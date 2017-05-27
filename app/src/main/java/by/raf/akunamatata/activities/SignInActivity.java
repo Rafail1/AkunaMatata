@@ -1,7 +1,6 @@
 package by.raf.akunamatata.activities;
 
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -45,6 +44,8 @@ import by.raf.akunamatata.R;
 import by.raf.akunamatata.model.DataProvider;
 import by.raf.akunamatata.model.User;
 import by.raf.akunamatata.services.UserIntentService;
+import in.championswimmer.libsocialbuttons.fabs.FABFacebook;
+import in.championswimmer.libsocialbuttons.fabs.FABGoogleplus;
 
 public class SignInActivity extends BaseActivity implements
         GoogleApiClient.OnConnectionFailedListener,
@@ -55,13 +56,13 @@ public class SignInActivity extends BaseActivity implements
     private static final String INTENT_EXTRA_ACCOUNT = "acct";
     private static final String INTENT_EXTRA_ID = "id";
     private FirebaseAuth mAuth;
-    private Firebase.AuthStateListener mAuthStateListener;
     private GoogleApiClient mGoogleApiClient;
 
-    @BindView(R.id.sign_in_button) Button mSignInButton;
+    @BindView(R.id.google_sign_in_button) FABGoogleplus mGoogleSignInButton;
+    @BindView(R.id.fb) FABFacebook mFacebookLoginButton;
     @BindView(R.id.field_email) EditText mEmailField;
     @BindView(R.id.field_password) EditText mPasswordField;
-    @BindView(R.id.login_with_facebook) LoginButton mFacebookLoginButton;
+    @BindView(R.id.login_with_facebook) LoginButton mFacebookSignInButton;
     @BindView(R.id.email_sign_in_button) Button mButtonEmailSignIn;
     @BindView(R.id.email_create_account_button) Button mButtonCreateAccount;
     @BindView(R.id.continue_without_sign) Button mButtonContinueWithoutSignIn;
@@ -79,7 +80,7 @@ public class SignInActivity extends BaseActivity implements
         Firebase firebaseRef = new Firebase(getResources().getString(R.string.firebase_url));
 
         // Buttons
-        mSignInButton.setOnClickListener(this);
+        mGoogleSignInButton.setOnClickListener(this);
         mButtonEmailSignIn.setOnClickListener(this);
         mButtonCreateAccount.setOnClickListener(this);
         mButtonContinueWithoutSignIn.setOnClickListener(this);
@@ -93,8 +94,8 @@ public class SignInActivity extends BaseActivity implements
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
         mFacebookCallbackManager = CallbackManager.Factory.create();
-        mFacebookLoginButton.setReadPermissions("email", "public_profile");
-        mFacebookLoginButton.registerCallback(mFacebookCallbackManager, new FacebookCallback<LoginResult>() {
+        mFacebookSignInButton.setReadPermissions("email", "public_profile");
+        mFacebookSignInButton.registerCallback(mFacebookCallbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 handleFacebookAccessToken(loginResult.getAccessToken());
@@ -110,13 +111,19 @@ public class SignInActivity extends BaseActivity implements
 
             }
         });
-        mAuthStateListener = new Firebase.AuthStateListener() {
+        mFacebookLoginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mFacebookSignInButton.performClick();
+            }
+        });
+        Firebase.AuthStateListener authStateListener = new Firebase.AuthStateListener() {
             @Override
             public void onAuthStateChanged(AuthData authData) {
                 updateUI(mAuth.getCurrentUser());
             }
         };
-        firebaseRef.addAuthStateListener(mAuthStateListener);
+        firebaseRef.addAuthStateListener(authStateListener);
         mAuth = FirebaseAuth.getInstance();
     }
 
@@ -196,32 +203,11 @@ public class SignInActivity extends BaseActivity implements
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
-//    private void signOut() {
-//        mAuth.signOut();
-//        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
-//                new ResultCallback<Status>() {
-//                    @Override
-//                    public void onResult(@NonNull Status status) {
-//                        updateUI(null);
-//                    }
-//                });
-//    }
     private void startAkuna() {
         Intent intent = AkunaMatataActivity.newIntent(this);
         startActivity(intent);
         finish();
     }
-//    private void revokeAccess() {
-//        mAuth.signOut();
-//
-//        Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
-//                new ResultCallback<Status>() {
-//                    @Override
-//                    public void onResult(@NonNull Status status) {
-//                        updateUI(null);
-//                    }
-//                });
-//    }
 
     private void updateUI(FirebaseUser user) {
         hideProgressDialog();
@@ -242,7 +228,7 @@ public class SignInActivity extends BaseActivity implements
     @Override
     public void onClick(View v) {
         int i = v.getId();
-        if (i == R.id.sign_in_button) {
+        if (i == R.id.google_sign_in_button) {
             signIn();
         }  else if (i == R.id.continue_without_sign) {
             startAkuna();

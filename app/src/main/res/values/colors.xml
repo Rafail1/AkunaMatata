@@ -5,4 +5,8 @@
     <color name="colorPrimaryAccent">#7E92FF</color>
     <color name="colorText">#fff</color>
     <color name="single_photo_bg">#000</color>
+    <color name="black">#000</color>
+    <color name="mans">#ddffdd</color>
+    <color name="girls">#00ff00</color>
+    <color name="nlo">#0000ff</color>
 </resources>
