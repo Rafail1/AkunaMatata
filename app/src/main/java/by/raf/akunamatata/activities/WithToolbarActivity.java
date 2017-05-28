@@ -41,9 +41,12 @@ public class WithToolbarActivity extends AppCompatActivity implements Observer, 
     protected SharedPreferences sp;
     private DataProvider mDataProvider;
 
-    @BindView(R.id.drawer_layout) DrawerLayout mDrawerLayout;
-    @BindView(R.id.nav_view) NavigationView mNavigationView;
-    @BindView(R.id.toolbar) Toolbar mToolBar;
+    @BindView(R.id.drawer_layout)
+    DrawerLayout mDrawerLayout;
+    @BindView(R.id.nav_view)
+    NavigationView mNavigationView;
+    @BindView(R.id.toolbar)
+    Toolbar mToolBar;
 
     @LayoutRes
     protected int getResId() {
@@ -85,6 +88,15 @@ public class WithToolbarActivity extends AppCompatActivity implements Observer, 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
+        if (preventSameMenuClick() && mPreviousMenuItem != null && mPreviousMenuItem.equals(item)) {
+            return true;
+        }
+        item.setCheckable(true);
+        item.setChecked(true);
+        if (mPreviousMenuItem != null) {
+            mPreviousMenuItem.setChecked(false);
+        }
+        mPreviousMenuItem = item;
         if (id == R.id.menu_sign_out) {
             item.setCheckable(false);
             if (NetworkManager.getInstance().isNetworkConnected(this)) {
@@ -93,23 +105,18 @@ public class WithToolbarActivity extends AppCompatActivity implements Observer, 
                 LoginManager.getInstance().logOut();
             }
             return false;
-        } else if(id == R.id.menu_sign_in) {
+        } else if (id == R.id.menu_sign_in) {
             Intent intent = SignInActivity.newIntent(this);
             startActivity(intent);
+        } else if(id == R.id.menu_profile) {
+            Intent intent = UserActivity.newIntent(this);
+            startActivity(intent);
         } else {
-            if (preventSameMenuClick() && mPreviousMenuItem != null && mPreviousMenuItem.equals(item)) {
-                    return true;
-            }
-            item.setCheckable(true);
-            item.setChecked(true);
-            if (mPreviousMenuItem != null) {
-                mPreviousMenuItem.setChecked(false);
-            }
-            mPreviousMenuItem = item;
+
             String itemTitle = item.getTitle().toString();
             sp.edit().putString(MENU_CURRENT_NAME, itemTitle).apply();
             for (int i = 0; i < mCategories.size(); i++) {
-                if(mCategories.get(i).getName().equals(itemTitle)) {
+                if (mCategories.get(i).getName().equals(itemTitle)) {
                     sp.edit().putString(MENU_CURRENT, mCategories.get(i).getId()).apply();
                     onCategoryChange();
                     loadEvents();
@@ -128,7 +135,7 @@ public class WithToolbarActivity extends AppCompatActivity implements Observer, 
     private void onCategoryChange() {
         DataProvider.currentCategory = sp.getString(MENU_CURRENT, null);
         ActionBar abar = getSupportActionBar();
-        if(abar != null) {
+        if (abar != null) {
             abar.setTitle(sp.getString(MENU_CURRENT_NAME, null));
         }
     }
@@ -152,21 +159,19 @@ public class WithToolbarActivity extends AppCompatActivity implements Observer, 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         Menu menu1 = mNavigationView.getMenu();
-        if(mCategories != null) {
+        if (mCategories != null) {
             setCategoriesMenu();
         }
-        if (NetworkManager.getInstance().isNetworkConnected(this)) {
-            if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-                menu1.findItem(R.id.menu_sign_out).setVisible(false);
-                menu1.findItem(R.id.menu_sign_in).setVisible(true);
-            } else {
-                menu1.findItem(R.id.menu_sign_out).setVisible(true);
-                menu1.findItem(R.id.menu_sign_in).setVisible(false);
-            }
-        } else {
-            menu1.findItem(R.id.menu_sign_in).setVisible(false);
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            menu1.findItem(R.id.menu_profile).setVisible(false);
             menu1.findItem(R.id.menu_sign_out).setVisible(false);
+            menu1.findItem(R.id.menu_sign_in).setVisible(true);
+        } else {
+            menu1.findItem(R.id.menu_profile).setVisible(true);
+            menu1.findItem(R.id.menu_sign_out).setVisible(true);
+            menu1.findItem(R.id.menu_sign_in).setVisible(false);
         }
+
         return true;
 
     }
@@ -175,11 +180,11 @@ public class WithToolbarActivity extends AppCompatActivity implements Observer, 
         String currentCategoryId = sp.getString(MENU_CURRENT, null);
         mCategoriesSubMenu.clear();
         for (int i = 0; i < mCategories.size(); i++) {
-            if(currentCategoryId == null) {
+            if (currentCategoryId == null) {
                 currentCategoryId = mCategories.get(i).getId();
             }
             MenuItem item = mCategoriesSubMenu.add(0, i, i, mCategories.get(i).getName());
-            if(mCategories.get(i).getId().equals(currentCategoryId)) {
+            if (mCategories.get(i).getId().equals(currentCategoryId)) {
                 item.setCheckable(true);
                 item.setChecked(true);
                 mPreviousMenuItem = item;

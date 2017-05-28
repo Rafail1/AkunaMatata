@@ -263,21 +263,21 @@ public class EventFragment extends Fragment implements Observer {
 
     private void getDialog() {
 
-        final CharSequence[] items = {"Take Photo", "Choose from Library", "Cancel"};
+        final CharSequence[] items = {getString(R.string.take_from_camera),
+                getString(R.string.take_from_library), getString(R.string.cancel)};
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getActivity());
-        builder.setTitle("Add Photo!");
+        builder.setTitle(getString(R.string.add_photo));
         builder.setItems(items, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int item) {
-
-                if (items[item].equals("Take Photo")) {
+                if (items[item].equals(getString(R.string.take_from_camera))) {
                     dispatchTakePictureIntent();
-                } else if (items[item].equals("Choose from Library")) {
+                } else if (items[item].equals(getString(R.string.take_from_library))) {
                     Intent intent = new Intent(
                             Intent.ACTION_PICK,
                             MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     startActivityForResult(intent, SELECT_FILE);
-                } else if (items[item].equals("Cancel")) {
+                } else if (items[item].equals(getString(R.string.cancel))) {
                     dialog.dismiss();
                 }
             }
@@ -316,8 +316,9 @@ public class EventFragment extends Fragment implements Observer {
         if (cursor != null) {
             int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             cursor.moveToFirst();
-            return "file://" + cursor.getString(column_index);
-
+            String path = "file://" + cursor.getString(column_index);
+            cursor.close();
+            return path;
         }
         return null;
 
@@ -427,7 +428,6 @@ public class EventFragment extends Fragment implements Observer {
                         reloadEvent(newEvent);
                         break;
                     case REMOVED:
-                        Log.d("Removed", "Event");
                         break;
                 }
 

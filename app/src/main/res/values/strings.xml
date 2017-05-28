@@ -61,7 +61,7 @@
     <string name="download_completed">Загрузка завершена</string>
     <string name="header">Header</string>
     <string name="menu_header_title">Hakuna Matata</string>
-    <string name="menu_bottom_title">Нижнее меню</string>
+    <string name="menu_bottom_title">Профиль</string>
     <string name="menu_group_categories">Категории</string>
     <string name="action_search">Поиск</string>
     <string name="search_title">Поиск</string>
@@ -86,4 +86,9 @@
     <string name="mans">Парни</string>
     <string name="girls">Девушки</string>
     <string name="nlo">НЛО</string>
+    <string name="menu_profile">Профиль</string>
+    <string name="take_from_camera">С камеры</string>
+    <string name="take_from_library">Из библиотеки</string>
+    <string name="cancel">Отмена</string>
+    <string name="add_photo">Добавить фото</string>
 </resources>

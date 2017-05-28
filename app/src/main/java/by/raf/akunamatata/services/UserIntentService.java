@@ -5,6 +5,7 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.support.annotation.Nullable;
 
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -34,7 +35,6 @@ import static by.raf.akunamatata.model.DataProvider.AKUNA_MATATA_PREFERENCES;
 
 
 public class UserIntentService extends IntentService {
-    public static final String PARAM_USER = "user";
     private static final String NAME = "by.raf.akunamatata.UserIntentService";
     private final HttpTransport HTTP_TRANSPORT = AndroidHttp.newCompatibleTransport();
     private final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
@@ -66,17 +66,17 @@ public class UserIntentService extends IntentService {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         if (meProfile != null) {
+            SharedPreferences sp = getSharedPreferences(AKUNA_MATATA_PREFERENCES, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sp.edit();
 
             List<Gender> genders = meProfile.getGenders();
 
             List<Birthday> birthdays = meProfile.getBirthdays();
-            List<Photo> photos = meProfile.getPhotos();
             Integer gender;
-            String path;
             Long birthday;
-            SharedPreferences sp = getSharedPreferences(AKUNA_MATATA_PREFERENCES, Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sp.edit();
+
             editor.putString(User.PREF_ID, id);
             if (genders != null && genders.size() > 0) {
                 gender = genders.get(0).getValue().equals("male") ? User.GENDER_MAN : User.GENDER_WOMAN;
@@ -94,10 +94,7 @@ public class UserIntentService extends IntentService {
                 editor.putLong(User.PREF_BIRTHDAY, birthday);
 
             }
-            if (photos != null && photos.size() > 0) {
-                path = photos.get(0).getUrl();
-                editor.putString(User.PREF_PHOTO, path);
-            }
+
             editor.putString(User.PREF_NAME, mAcct.getGivenName());
             editor.putString(User.PREF_LAST_NAME, mAcct.getFamilyName());
             editor.putInt(User.PREF_REGALE, User.REGALE);
